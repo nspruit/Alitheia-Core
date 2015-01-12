@@ -93,7 +93,7 @@ public class AdminServiceImplTest {
     
     @Test
     public void testShow() {
-    	testCreate();
+    	testExecute();
         AdminAction aa = impl.show(failid);
         assertNotNull(aa);
         
