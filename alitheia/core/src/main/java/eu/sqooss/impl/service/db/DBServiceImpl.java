@@ -36,35 +36,32 @@ package eu.sqooss.impl.service.db;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.net.URL;
 import java.net.URI;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
-import org.hibernate.QueryException;
-import org.hibernate.JDBCException;
-import org.hibernate.Query;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
-import org.hibernate.cfg.Configuration;	
+import org.hibernate.cfg.Configuration;
 import org.osgi.framework.BundleContext;
 
 import eu.sqooss.core.AlitheiaCoreService;
-import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.DBSessionManager;
+import eu.sqooss.service.db.DBSessionValidation;
+import eu.sqooss.service.db.HQLQueryInterface;
+import eu.sqooss.service.db.QueryInterface;
+import eu.sqooss.service.db.QueryInterfaceFactory;
+import eu.sqooss.service.db.SQLQueryInterface;
 import eu.sqooss.service.logging.Logger;
 import eu.sqooss.service.util.URIUtills;
 
@@ -125,52 +122,12 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
     private BundleContext bc = null;
     private AtomicBoolean isInitialised = new AtomicBoolean(false);
     private Properties conProp = new Properties();
+    private DBSessionManager sessionManager = null;
+    private DBSessionValidation sessionValidation = null;
     
-    private void logSQLException(SQLException e) {
-
-        while (e != null) {
-            String message = String.format("SQLException: SQL State:%s, Error Code:%d, Message:%s",
-                    e.getSQLState(), e.getErrorCode(), e.getMessage());
-            logger.warn(message);
-            e = e.getNextException();
-        }
-    }
-    
-    private void logExceptionAndTerminateSession( Exception e ) {
-        if ( e instanceof JDBCException ) {
-            JDBCException jdbce = (JDBCException) e;
-            logSQLException(jdbce.getSQLException());
-        }
-        logger.warn("Exception caught during database session: " + e.getMessage() 
-                + ". Rolling back current transaction and terminating session...");
-        e.printStackTrace();
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            s.getTransaction().rollback();
-        } catch (HibernateException e1) {
-            logger.error("Error while rolling back failed transaction :" + e1.getMessage());
-            if ( s != null ) {
-                try {
-                    s.close();
-                } catch ( HibernateException e2) {}
-            }
-        }
-        
-    }
-   
-    private boolean checkSession() {
-        if ( !isDBSessionActive() ) {
-            logger.warn("Trying to call a DBService method without an active session");
-            try {
-                throw new Exception("No active session.");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return false;
-        }
-        return true;
-    }
+    private Map<Class<? extends QueryInterface>, Class<? extends QueryInterfaceFactory<?>>>
+			queryInterfaceFactories = new HashMap<>();
+    private Map<Class<? extends QueryInterface>, QueryInterface> queryInterfaces = new HashMap<>();
     
     private boolean getJDBCConnection() {
         String driver = conProp.getProperty("hibernate.connection.driver_class");
@@ -190,7 +147,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
             return false;
         } catch (SQLException e) {
             logger.error("Failed to register driver " + driver);
-            logSQLException(e);
+            sessionValidation.logSQLException(e);
             return false;
         }
         
@@ -205,7 +162,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
         } catch (SQLException e) {
             logger.error("Unable to connect to DB URL " +
                     conProp.getProperty("hibernate.connection.url"));
-            logSQLException(e);
+            sessionValidation.logSQLException(e);
             return false;
         }
     }
@@ -273,6 +230,10 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
             }
             sessionFactory = c.buildSessionFactory();
             
+            DBSessionManagerImpl ssm = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
+            sessionManager = ssm;
+            sessionValidation = ssm;
+            
             if (sessionFactory == null)
                 return false;
         } catch (Throwable e) {
@@ -283,12 +244,19 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
         return true;
     }
     
+    private void preloadFactories() {
+    	registerQueryInterface(QueryInterface.class, HQLQueryInterfaceImpl.Factory.class);
+    	registerQueryInterface(HQLQueryInterface.class, HQLQueryInterfaceImpl.Factory.class);
+    	registerQueryInterface(SQLQueryInterface.class, SQLQueryInterfaceImpl.Factory.class);
+    }
+    
     public DBServiceImpl() { }
     
     public DBServiceImpl(Properties p, URL configFileURL, Logger l) { 
         this.conProp = p;
         this.logger = l;
         initHibernate(configFileURL);
+        preloadFactories();
         isInitialised.compareAndSet(false, true);
         instance = this;
     }
@@ -298,480 +266,10 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
             instance = new DBServiceImpl();
         return instance;
     }
-
-    public <T extends DAObject> T findObjectById(Class<T> daoClass, long id) {
-        return doFindObjectById(daoClass, id, false);
-    }
-    
-    public <T extends DAObject> T findObjectByIdForUpdate(Class<T> daoClass, long id) {
-        return doFindObjectById(daoClass, id, true);
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends DAObject> T doFindObjectById(Class<T> daoClass, long id, boolean useLock) {
-        if ( !checkSession() )
-            return null;
-        
-        try {
-            Session s = sessionFactory.getCurrentSession();
-            return (T) (useLock ? s.get(daoClass, id, LockMode.UPGRADE) : s.get(daoClass, id));
-        } catch (HibernateException e) {
-            logExceptionAndTerminateSession(e);
-            return null;
-        }
-    }
-
-    public <T extends DAObject> List<T> findObjectsByProperties(Class<T> daoClass, Map<String,Object> properties) {
-        return doFindObjectsByProperties(daoClass, properties, false);
-    }
-
-    public <T extends DAObject> List<T> findObjectsByPropertiesForUpdate(Class<T> daoClass, Map<String,Object> properties) {
-        return doFindObjectsByProperties(daoClass, properties, true);
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends DAObject> List<T> doFindObjectsByProperties(Class<T> daoClass, Map<String,Object> properties, boolean useLock) {
-        if( !checkSession() )
-            return Collections.emptyList();
-
-        // TODO maybe check that the properties are valid (e.g. with java.bean.PropertyDescriptor)
-
-        Map<String,Object> parameterMap = new HashMap<String,Object>();
-        StringBuffer whereClause = new StringBuffer();
-        for (String key : properties.keySet()) {
-            whereClause.append( whereClause.length() == 0 ? " where " : " and " );
-            // We use "foo" as the name of the object
-            whereClause.append("foo" + "." + key + "=:_" + key );
-            parameterMap.put( "_" + key, properties.get(key) );
-        }
-        try {
-            // We use "foo" as the name of the object
-            return (List<T>) doHQL( "from " + daoClass.getName() + " as foo " + whereClause, parameterMap, useLock );
-        } catch (QueryException e) {
-            logger.warn("findObjectsByProperties(): invalid properties map. Restarting session...");
-            // Automatically restart a session
-            // (just be careful with preloaded DAOs that become detached)
-            startDBSession();
-            return Collections.emptyList();
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doSQL(java.lang.String)
-     */
-    public List<?> doSQL(String sql)
-        throws SQLException {
-        return doSQL(sql, null);
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doSQL(java.lang.String, java.util.Map)
-     */
-    public List<?> doSQL(String sql, Map<String, Object> params)
-        throws SQLException, QueryException {
-        boolean autoSession = !isDBSessionActive();
-        try {
-            Session s = sessionFactory.getCurrentSession();
-            if (autoSession) {
-                s.beginTransaction();
-            }
-            Query query = s.createSQLQuery(sql);
-            if ( params != null ) {
-                for ( String param : params.keySet() ) {
-                    query.setParameter(param, params.get(param));
-                }
-            }
-            List<?> result = query.list();
-            if (autoSession) {
-                s.getTransaction().commit();
-            }
-            return result;
-        } catch ( JDBCException e ) {
-            logExceptionAndTerminateSession(e);
-            throw e.getSQLException();
-        } catch ( QueryException e ) {
-            logExceptionAndTerminateSession(e);
-            throw e;
-        } catch( HibernateException e ) {
-            logExceptionAndTerminateSession(e);
-            return Collections.emptyList();
-        }
-    }
-
-    public int callProcedure(String procName, List<String> args, Map<String, Object> params)
-			throws SQLException, QueryException {
-		boolean autoSession = !isDBSessionActive();
-		StringBuilder sql = new StringBuilder("call " + procName + "(");
-		
-		for (String arg : args) {
-			sql.append(":").append(arg).append(",");
-		}
-		sql.deleteCharAt(sql.lastIndexOf(",")).append(")");
-		
-		try {
-			Session s = sessionFactory.getCurrentSession();
-			if (autoSession) {
-				s.beginTransaction();
-			}
-			Query query = s.createSQLQuery(sql.toString());
-			if (params != null) {
-				for (String param : params.keySet()) {
-					query.setParameter(param, params.get(param));
-				}
-			}
-			int result = query.executeUpdate();
-			if (autoSession) {
-				s.getTransaction().commit();
-			}
-			return result;
-		} catch (JDBCException e) {
-			logExceptionAndTerminateSession(e);
-			throw e.getSQLException();
-		} catch (QueryException e) {
-			logExceptionAndTerminateSession(e);
-			throw e;
-		} catch (HibernateException e) {
-			logExceptionAndTerminateSession(e);
-			throw e;
-		}
-	}
-    
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String)
-     */
-    public List<?> doHQL(String hql)
-        throws QueryException {
-        return doHQL(hql, null, null, false, -1, -1);
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map)
-     */
-    public List<?> doHQL(String hql, Map<String, Object> params) 
-        throws QueryException {
-        return doHQL(hql, params, null, false, -1, -1);
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map, int)
-     */
-    public List<?> doHQL(String hql, Map<String, Object> params, int limit) 
-        throws QueryException {
-        return doHQL(hql, params, null, false, 0, limit);
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map, boolean)
-     */
-    public List<?> doHQL(String hql, Map<String, Object> params, boolean lockForUpdate) 
-        throws QueryException {
-        return doHQL(hql, params, null, lockForUpdate, -1, -1);
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map, java.util.Map)
-     */
-    public List<?> doHQL(String hql, Map<String, Object> params,
-            Map<String, Collection> collectionParams) 
-        throws QueryException {
-        return doHQL(hql, params, collectionParams, false, -1, -1);
-    }
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map, java.util.Map, boolean, int, int)
-     */
-    public List<?> doHQL(String hql, Map<String, Object> params,
-            Map<String, Collection> collectionParams, boolean lockForUpdate, int start, int limit) 
-        throws QueryException {
-        if ( !checkSession() ) {
-            return Collections.emptyList();
-        }
-        try {
-            Session s = sessionFactory.getCurrentSession();
-            Query query = s.createQuery(hql);
-            if (params != null) {
-                for ( String param : params.keySet() ) {
-                    query.setParameter(param, params.get(param));
-                }
-            }
-            if (collectionParams != null) {
-                for ( String param : collectionParams.keySet() ) {
-                    query.setParameterList(param, collectionParams.get(param));
-                }
-            }
-            if (lockForUpdate) {
-                query.setLockMode("foo", LockMode.PESSIMISTIC_WRITE);
-            }
-            if ( start >= 0 && limit >= 0 ) {
-                query.setFirstResult(start);
-                query.setMaxResults(limit);
-            }
-            return query.list();
-        } catch ( QueryException e ) {
-            logExceptionAndTerminateSession(e);
-            throw e;
-        } catch( HibernateException e ) {
-            logExceptionAndTerminateSession(e);
-            return Collections.emptyList();
-        } catch (ClassCastException e) {
-            // Throw a QueryException instead of forwarding the ClassCastException
-            // it's more explicit
-            QueryException ebis = new QueryException("Invalid HQL query parameter type: "
-                                                    + e.getMessage(), e);
-            logExceptionAndTerminateSession(ebis);
-            throw ebis;
-        }
-        
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#addRecord(eu.sqooss.service.db.DAObject)
-     */
-    public boolean addRecord(DAObject record) {
-        ArrayList<DAObject> tmpList = new ArrayList<DAObject>(1);
-        tmpList.add(record);
-        return addRecords(tmpList);
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#deleteRecord(eu.sqooss.service.db.DAObject)
-     */
-    public boolean deleteRecord(DAObject record) {
-        ArrayList<DAObject> tmpList = new ArrayList<DAObject>(1);
-        tmpList.add(record);
-        return deleteRecords(tmpList);
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#addRecords(java.util.List)
-     */
-    public <T extends DAObject> boolean addRecords(List<T> records) {
-        if( !checkSession() )
-            return false;
-
-        DAObject lastRecord = null;
-        try {
-            Session s = sessionFactory.getCurrentSession();
-            for (DAObject record : records) {
-                lastRecord = record;
-                s.save(record);				
-            }
-            lastRecord = null;
-            s.flush();
-            return true;
-        } catch (HibernateException e) {
-            if (lastRecord != null) {
-                logger.error("Failed to add object "
-                        + "[" + lastRecord.getClass().getName() + ":" + lastRecord.getId() + "]"
-                        + " to the database: " + e.getMessage());
-            }
-            logExceptionAndTerminateSession(e);
-            return false;
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#deleteRecords(java.util.List)
-     */
-    public <T extends DAObject> boolean deleteRecords(List<T> records) {
-        if( !checkSession() )
-            return false;
-
-        DAObject lastRecord = null;
-        try {
-            Session s = sessionFactory.getCurrentSession();
-            for (DAObject record : records) {
-                lastRecord = record;
-                s.delete(record);
-            }
-            lastRecord = null;
-            s.flush();
-            return true;
-        } catch (HibernateException e) {
-            if (lastRecord != null) {
-                logger.error("Failed to remove object "
-                        + "[" + lastRecord.getClass().getName() + ":" + lastRecord.getId() + "]"
-                        + " from the database: " + e.getMessage());
-            }
-            logExceptionAndTerminateSession(e);
-            return false;
-        }
-    }
     
     public Logger logger() {
         return this.logger;
-    }
-    
-    public boolean startDBSession() {
-        //Boot time check
-        if(isInitialised.get() == false) {
-            return false;
-        }
-        
-        if( isDBSessionActive() ) {
-            logger.debug("startDBSession() - a session was already started for that thread");
-            return true;
-        }
-        
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            //logger.debug("startDBSession: " + s + "[hashcode=" + s.hashCode() + ",open=" + s.isOpen() + "]");
-            s.beginTransaction();
-        } catch (HibernateException e) {
-            logger.error("startDBSession() - error while initializing session: " + e.getMessage());
-            if ( s != null ) {
-                try {
-                    s.close();
-                } catch (HibernateException e1) {
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public boolean commitDBSession() {
-        if ( !checkSession() )
-            return false;
-        
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            //logger.debug("commitDBSession: " + s + "[hashcode=" + s.hashCode() + ",open=" + s.isOpen() + "]");
-            s.getTransaction().commit();
-        } catch (HibernateException e) {
-            logger.error("commitDBSession() - error while committing transaction: " + e.getMessage());
-            if ( s != null ) {
-                // The docs say to do so
-                try {
-                    s.getTransaction().rollback();
-                } catch (HibernateException e1) {
-                    try {
-                        s.close();
-                    } catch (HibernateException e2) {
-                    }
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public boolean rollbackDBSession() {
-        if ( !checkSession() )
-            return false;
-        
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            s.getTransaction().rollback();
-        } catch (HibernateException e) {
-            logger.error("commitDBSession() - error while rolling back transaction: " + e.getMessage());
-            if ( s != null ) {
-                try {
-                    s.close();
-                } catch (HibernateException e1) {
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-    
-    public boolean flushDBSession() {
-        if ( !checkSession() )
-            return false;
-        
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            s.flush();
-            s.clear();
-        } catch (HibernateException e) {
-            logger.error("flushDBSession() - error while flushing session: " + e.getMessage());
-            if ( s != null ) {
-                try {
-                    s.close();
-                } catch (HibernateException e1) {
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public boolean isDBSessionActive() {
-        //Boot time check
-        if(isInitialised.get() == false) {
-            return false;
-        }
-        
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            return s.getTransaction() != null && s.getTransaction().isActive();
-        } catch (HibernateException e) {
-            logger.error("isDBSessionActive() - error while checking session status: " + e.getMessage());
-            if ( s != null ) {
-                try {
-                    s.close();
-                } catch (HibernateException e1) {
-                }
-            }
-            return false;
-        }
-    }
-        
-    @SuppressWarnings("unchecked")
-    public <T extends DAObject> T attachObjectToDBSession(T obj) {
-        if( !checkSession() )
-            return null;
-
-        try {
-            Session s = sessionFactory.getCurrentSession();
-            if ( s.contains(obj)) {
-                return obj;
-            } else {
-                return (T) s.merge(obj);
-            }
-        } catch (HibernateException e) {
-            logExceptionAndTerminateSession(e);
-            return null;
-        }
-    }
-    
-    public int executeUpdate(String hql, Map<String, Object> params) 
-    throws QueryException {
-        if (!checkSession()) {
-            return -1;
-        }
-        
-        try {
-            Session s = sessionFactory.getCurrentSession();
-            Query query = s.createQuery(hql);
-            if (params != null) {
-                for (String param : params.keySet()) {
-                    query.setParameter(param, params.get(param));
-                }
-            }
-            
-            return query.executeUpdate();
-            
-        } catch (QueryException e) {
-            logExceptionAndTerminateSession(e);
-            throw e;
-        } catch (HibernateException e) {
-            logExceptionAndTerminateSession(e);
-            return -1;
-        } catch (ClassCastException e) {
-            // Throw a QueryException instead of forwarding the ClassCastException
-            // it's more explicit
-            QueryException ebis = new QueryException(
-                    "Invalid HQL query parameter type: " + e.getMessage(), e);
-            logExceptionAndTerminateSession(ebis);
-            throw ebis;
-        }
-    }
+    } 
 
     @Override
     public boolean startUp() {
@@ -809,6 +307,72 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 	public void setInitParams(BundleContext bc, Logger l) {
 		this.bc = bc;
         this.logger = l;
+	}
+	
+	@Override
+	public DBSessionManager getSessionManager() {
+		return sessionManager;
+	}
+	
+	@Override
+	public QueryInterface getQueryInterface() {
+		return getQueryInterface(QueryInterface.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends QueryInterface> T getQueryInterface(Class<T> queryInterfaceType) {
+		if (!queryInterfaces.containsKey(queryInterfaceType)) {
+			if (!queryInterfaceFactories.containsKey(queryInterfaceType)) {
+				logger.error("Requesting QueryInterface of unknown type: " + queryInterfaceType.getName());
+				return null;
+			}
+			
+			try {
+				// Lazy initialization of QueryInterfaces by using a factory pattern
+				QueryInterfaceFactory<T> factory = (QueryInterfaceFactory<T>)
+						queryInterfaceFactories.get(queryInterfaceType).newInstance();
+				T qi = factory.build(this, sessionFactory, sessionValidation);
+				
+				queryInterfaces.put(queryInterfaceType, qi);
+			} catch (InstantiationException | IllegalAccessException e) {
+				logger.error("Failed to instantiate QueryInterface: ", e);
+				e.printStackTrace();
+				return null;
+			}
+		}
+		
+		return (T) queryInterfaces.get(queryInterfaceType);
+	}
+	
+	@Override
+	public <T extends QueryInterface> void registerQueryInterface(Class<T> queryInterfaceType,
+			Class<? extends QueryInterfaceFactory<? extends T>> factoryType) {
+		// Override any existing interface
+		if (queryInterfaces.containsKey(queryInterfaceType))
+			queryInterfaces.remove(queryInterfaceType);
+		
+		queryInterfaceFactories.put(queryInterfaceType, factoryType);
+	}
+	
+	/**
+	 * Prepare the DB service for testing by injecting a custom SessionFactory.
+	 * Note: this should NOT be used in production code.
+	 * 
+	 * @param s a custom SessionFactory object
+	 * @param setInitialised true if the DBServiceImpl should be considered initialised
+	 * @param l the logger to use for the DB service
+	 */
+	public void prepareForTest(SessionFactory s, boolean setInitialised, Logger l) {
+		this.sessionFactory = s;
+		this.logger = l;
+		
+		DBSessionManagerImpl ssm = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
+		this.sessionManager = ssm;
+		this.sessionValidation = ssm;
+		preloadFactories();
+		
+		isInitialised.set(setInitialised);
 	}
 }
 

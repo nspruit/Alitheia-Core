@@ -87,8 +87,8 @@ public class BugzillaUpdater implements MetadataUpdater, JobStateListener  {
 	@Override
     public void update() throws Exception {
 	    jobCounter = new AtomicInteger();
-        dbs.startDBSession();
-        project = dbs.attachObjectToDBSession(project);
+        dbs.getSessionManager().startDBSession();
+        project = dbs.getSessionManager().attachObjectToDBSession(project);
         
         Scheduler s = AlitheiaCore.getInstance().getScheduler();
         
@@ -124,8 +124,8 @@ public class BugzillaUpdater implements MetadataUpdater, JobStateListener  {
             } catch(InterruptedException ignored){}
         }
         
-        if (dbs.isDBSessionActive())
-            dbs.commitDBSession();
+        if (dbs.getSessionManager().isDBSessionActive())
+            dbs.getSessionManager().commitDBSession();
     }
         
     @Override

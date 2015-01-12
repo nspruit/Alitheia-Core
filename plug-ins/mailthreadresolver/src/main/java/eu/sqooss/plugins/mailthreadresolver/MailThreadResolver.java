@@ -37,8 +37,11 @@ import java.util.Set;
 
 import javax.mail.internet.MimeMessage;
 
+import org.hibernate.hql.ast.HqlASTFactory;
+
 import eu.sqooss.core.AlitheiaCore;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.MailMessage;
 import eu.sqooss.service.db.MailingList;
 import eu.sqooss.service.db.MailingListThread;
@@ -88,14 +91,14 @@ public class MailThreadResolver implements MetadataUpdater {
     @Override
     public void update() throws Exception {
         dbs = AlitheiaCore.getInstance().getDBService();
-        dbs.startDBSession();
-        sp = dbs.attachObjectToDBSession(sp);
+        dbs.getSessionManager().startDBSession();
+        sp = dbs.getSessionManager().attachObjectToDBSession(sp);
         lists = sp.getMailingLists();
         for (MailingList l : lists) {
             this.ml = l;
             realupdate();
         }
-        if (dbs.isDBSessionActive())dbs.commitDBSession();
+        if (dbs.getSessionManager().isDBSessionActive())dbs.getSessionManager().commitDBSession();
     }
     
     @Override
@@ -104,8 +107,8 @@ public class MailThreadResolver implements MetadataUpdater {
     }
     
     private void realupdate() throws Exception {
-        if (!dbs.isDBSessionActive()) dbs.startDBSession();
-        ml = dbs.attachObjectToDBSession(ml);
+        if (!dbs.getSessionManager().isDBSessionActive()) dbs.getSessionManager().startDBSession();
+        ml = dbs.getSessionManager().attachObjectToDBSession(ml);
         int newThreads = 0, updatedThreads = 0, processedEmails = 0;
         MailMessage lastEmail = null;
         lastEmail = ml.getLatestEmail();
@@ -113,7 +116,7 @@ public class MailThreadResolver implements MetadataUpdater {
         
         if (lastEmail == null) {
             info("No mail messages for list " + ml);
-            dbs.commitDBSession();
+            dbs.getSessionManager().commitDBSession();
             return; //No messages for this mailing list
         }
         
@@ -128,17 +131,17 @@ public class MailThreadResolver implements MetadataUpdater {
         Map<String,Object> params = new HashMap<String, Object>(1);
         params.put(paramMl, ml);
         
-        List<Long> mmList = (List<Long>) dbs.doHQL(query, params);
+        List<Long> mmList = (List<Long>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, params);
         
         if (mmList.isEmpty()) {
             info("No unprocessed mail messages found for list " + ml);
-            dbs.commitDBSession();
+            dbs.getSessionManager().commitDBSession();
             return;
         }
         
         for (Long mailId : mmList) {
-            if (!dbs.isDBSessionActive())
-                dbs.startDBSession();
+            if (!dbs.getSessionManager().isDBSessionActive())
+                dbs.getSessionManager().startDBSession();
             MailMessage mail = MailMessage.loadDAObyId(mailId, MailMessage.class);
             
             // Message has been already added to thread
@@ -267,7 +270,7 @@ public class MailThreadResolver implements MetadataUpdater {
 
                 /* Create a new thread */
                 mlt = new MailingListThread(ml, mail.getSendDate());
-                dbs.addRecord(mlt);
+                dbs.getQueryInterface().addRecord(mlt);
                 mail.setThread(mlt);
                 mail.setDepth(0);
                 debug("Adding new thread " + mlt.getId());
@@ -276,16 +279,16 @@ public class MailThreadResolver implements MetadataUpdater {
             if (mail.getThread() == null) 
                 warn("Mail message " + mail + " was not assigned any thread");
             
-            dbs.commitDBSession();
+            dbs.getSessionManager().commitDBSession();
             processedEmails ++;
             progress = (float)((double)processedEmails / (double)mmList.size()) * 100;
         }
-        dbs.startDBSession();
+        dbs.getSessionManager().startDBSession();
         info("Mail thread updater - " + ml.getListId() + " " + processedEmails
                 + " new emails, " + newThreads + " new threads, " + updatedThreads 
                 + " thread updates" );
 
-        if (dbs.isDBSessionActive()) dbs.commitDBSession();
+        if (dbs.getSessionManager().isDBSessionActive()) dbs.getSessionManager().commitDBSession();
     }   
     
     @Override

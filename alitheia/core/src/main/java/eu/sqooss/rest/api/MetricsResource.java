@@ -45,6 +45,7 @@ import eu.sqooss.service.abstractmetric.AlitheiaPlugin;
 import eu.sqooss.service.abstractmetric.Result;
 import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.Metric;
 import eu.sqooss.service.db.MetricType;
 import eu.sqooss.service.db.MetricType.Type;
@@ -64,7 +65,7 @@ public class MetricsResource {
 	public List<Metric> getMetrics() {
 		DBService db = AlitheiaCore.getInstance().getDBService();
 		String q = " from Metric";
-		List<Metric> sp = (List<Metric>) db.doHQL(q);
+		List<Metric> sp = (List<Metric>) db.getQueryInterface(HQLQueryInterface.class).doHQL(q);
 		return sp;
 	}
 	
@@ -74,7 +75,7 @@ public class MetricsResource {
 	public List<MetricType> getMetricTypes() {
 		DBService db = AlitheiaCore.getInstance().getDBService();
 		String q = " from MetricType";
-		List<MetricType> sp = (List<MetricType>) db.doHQL(q);
+		List<MetricType> sp = (List<MetricType>) db.getQueryInterface(HQLQueryInterface.class).doHQL(q);
 		return sp;
 	}
 

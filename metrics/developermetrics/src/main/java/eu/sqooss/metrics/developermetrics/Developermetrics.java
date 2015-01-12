@@ -45,6 +45,7 @@ import eu.sqooss.service.abstractmetric.Result;
 import eu.sqooss.service.abstractmetric.Result.ResultType;
 import eu.sqooss.service.db.Developer;
 import eu.sqooss.service.db.Directory;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.Metric;
 import eu.sqooss.service.db.ProjectDirectory;
 import eu.sqooss.service.db.ProjectFile;
@@ -107,17 +108,17 @@ public class Developermetrics extends AbstractMetric {
         Metric m = Metric.getMetricByMnemonic(MNEM_TEAMSIZE1);
         ProjectVersionMeasurement pvmOne = new ProjectVersionMeasurement(
                 m, v, String.valueOf(commSize(v, oneMonth)));
-        db.addRecord(pvmOne);
+        db.getQueryInterface().addRecord(pvmOne);
         
         m = Metric.getMetricByMnemonic(MNEM_TEAMSIZE3);
         ProjectVersionMeasurement pvmThree = new ProjectVersionMeasurement(
                 m, v, String.valueOf(commSize(v, threeMonths)));
-        db.addRecord(pvmThree);
+        db.getQueryInterface().addRecord(pvmThree);
         
         m = Metric.getMetricByMnemonic(MNEM_TEAMSIZE6);
         ProjectVersionMeasurement pvmSix = new ProjectVersionMeasurement(
                 m, v, String.valueOf(commSize(v, sixMonths)));
-        db.addRecord(pvmSix);
+        db.getQueryInterface().addRecord(pvmSix);
     }
     
     private long commSize(ProjectVersion v, long ts) {
@@ -126,7 +127,7 @@ public class Developermetrics extends AbstractMetric {
         params.put("paramOld", ts);
         params.put("paramProject", v.getProject());
         
-        return (Long) db.doHQL(activeLast, params).get(0);
+        return (Long) db.getQueryInterface(HQLQueryInterface.class).doHQL(activeLast, params).get(0);
     }
 
     public List<Result> getResult(ProjectFile pf, Metric m) {
@@ -156,7 +157,7 @@ public class Developermetrics extends AbstractMetric {
         
         ProjectFileMeasurement pfm = new ProjectFileMeasurement(m, a, 
                 String.valueOf(eyeballs));
-        db.addRecord(pfm);
+        db.getQueryInterface().addRecord(pfm);
     }
 
     private List<Developer> fileEyeballs(ProjectFile a) {
@@ -166,7 +167,7 @@ public class Developermetrics extends AbstractMetric {
         params.put("paramProject", a.getProjectVersion().getProject());
         params.put("paramFileId", a.getId());
         
-        return (List<Developer>) db.doHQL(fileEyeballs, params);
+        return (List<Developer>) db.getQueryInterface(HQLQueryInterface.class).doHQL(fileEyeballs, params);
     }
 }
 

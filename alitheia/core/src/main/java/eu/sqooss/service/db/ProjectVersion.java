@@ -460,7 +460,7 @@ public class ProjectVersion extends DAObject {
         parameters.put(paramOrder, this.getSequence());
         parameters.put(paramProject, this.getProject().getId());
 
-        List<?> projectVersions = dbs.doHQL(query, parameters, 1);
+        List<?> projectVersions = dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, parameters, 1);
         
         if(projectVersions == null || projectVersions.size() == 0) {
             return null;
@@ -491,7 +491,7 @@ public class ProjectVersion extends DAObject {
         parameters.put(paramTS, this.getSequence());
         parameters.put(paramProject, this.getProject().getId());
 
-        List<?> projectVersions = dbs.doHQL(query, parameters, 1);
+        List<?> projectVersions = dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, parameters, 1);
         
         if(projectVersions == null || projectVersions.size() == 0) {
             return null;
@@ -514,13 +514,13 @@ public class ProjectVersion extends DAObject {
      *         or null if there is none.
      */
     public static ProjectVersion getVersionByRevision(StoredProject project, String revisionId) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
    
         Map<String,Object> parameters = new HashMap<String,Object>();
         parameters.put("project", project);
         parameters.put("revisionId", revisionId);
 
-        List<ProjectVersion> versions = dbs.findObjectsByProperties(ProjectVersion.class, parameters);
+        List<ProjectVersion> versions = qi.findObjectsByProperties(ProjectVersion.class, parameters);
         if (versions == null || versions.size() == 0) {
             return null;
         } else {
@@ -547,13 +547,13 @@ public class ProjectVersion extends DAObject {
      */
     public static ProjectVersion getVersionByTimestamp(
             StoredProject project, long timestamp) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
    
         Map<String,Object> parameters = new HashMap<String,Object>();
         parameters.put("project", project);
         parameters.put("timestamp", timestamp);
 
-        List<ProjectVersion> versions = dbs.findObjectsByProperties(
+        List<ProjectVersion> versions = qi.findObjectsByProperties(
                 ProjectVersion.class, parameters);
         if (versions == null || versions.size() == 0) {
             return null;
@@ -575,7 +575,7 @@ public class ProjectVersion extends DAObject {
 
         Map<String,Object> parameterMap = new HashMap<String,Object>();
         parameterMap.put("sp", sp);
-        List<?> pvList = dbs.doHQL("from ProjectVersion pv where pv.project=:sp"
+        List<?> pvList = dbs.getQueryInterface(HQLQueryInterface.class).doHQL("from ProjectVersion pv where pv.project=:sp"
                 + " and pv.sequence = 1",
                 parameterMap);
 
@@ -594,7 +594,7 @@ public class ProjectVersion extends DAObject {
 
         Map<String,Object> parameterMap = new HashMap<String,Object>();
         parameterMap.put("sp", sp);
-        List<?> pvList = dbs.doHQL("from ProjectVersion pv where pv.project=:sp"
+        List<?> pvList = dbs.getQueryInterface(HQLQueryInterface.class).doHQL("from ProjectVersion pv where pv.project=:sp"
                 + " and pv.sequence = (select max(pv2.sequence) from "
                 + " ProjectVersion pv2 where pv2.project=:sp)",
                 parameterMap);
@@ -622,7 +622,7 @@ public class ProjectVersion extends DAObject {
         params.put("metric", m);
         params.put("project", p);
         List<ProjectVersion> pv = (List<ProjectVersion>) 
-            AlitheiaCore.getInstance().getDBService().doHQL( query, params, 1);
+            AlitheiaCore.getInstance().getDBService().getQueryInterface(HQLQueryInterface.class).doHQL( query, params, 1);
 	    
         if (pv.isEmpty())
             return null;
@@ -651,7 +651,7 @@ public class ProjectVersion extends DAObject {
         Map<String,Object> parameters = new HashMap<String,Object>();
         parameters.put(parVersionId, this);
         parameters.put(parFileStatus, state);
-        List<?> queryResult = dbs.doHQL(query, parameters);
+        List<?> queryResult = dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, parameters);
         // Return the query's result (if found)
         if(queryResult != null || queryResult.size() > 0)
             return (Long) queryResult.get(0);
@@ -700,7 +700,7 @@ public class ProjectVersion extends DAObject {
         params.put(paramIsDirectory, Boolean.FALSE);
         params.put(paramState, ProjectFileState.deleted());
         
-        return (Long) dbs.doHQL(q.toString(), params).get(0);
+        return (Long) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(q.toString(), params).get(0);
     }
 
 
@@ -762,7 +762,7 @@ public class ProjectVersion extends DAObject {
  	        params.put(paramIsDirectory, isDirectory);
  	    }
  	    
- 	    List<ProjectFile> projectFiles = (List<ProjectFile>) dbs.doHQL(q.toString(), params);
+ 	    List<ProjectFile> projectFiles = (List<ProjectFile>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(q.toString(), params);
 
  	    if (projectFiles == null) 
  	        return Collections.emptyList();
@@ -876,11 +876,11 @@ public class ProjectVersion extends DAObject {
      * Return true if this version's actions generated a tag.
      */
     public boolean isTag() {
-    	DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
     	Map<String, Object> props = new HashMap<String, Object>();
     	props.put("projectVersion", this);
     	
-    	List<Tag> tags = dbs.findObjectsByProperties(Tag.class, props);
+    	List<Tag> tags = qi.findObjectsByProperties(Tag.class, props);
     	
     	if (tags.isEmpty())
     		return false;

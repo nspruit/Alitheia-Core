@@ -253,7 +253,7 @@ public class Bug extends DAObject {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(paramStoredProject, sp);
         
-        List<Bug> buglist = (List<Bug>) dbs.doHQL(query, params,1);
+        List<Bug> buglist = (List<Bug>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, params,1);
         
         if (buglist.isEmpty())
             return null;
@@ -283,7 +283,7 @@ public class Bug extends DAObject {
         params.put(paramBugID, bugID);
         params.put(paramStoredProject, project);
         
-        return (List<BugReportMessage>) dbs.doHQL(query, params);
+        return (List<BugReportMessage>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, params);
     }
     
     /**
@@ -305,7 +305,7 @@ public class Bug extends DAObject {
         params.put(paramBugID, bugID);
         params.put(paramStoredProject, sp);
         
-        List<Bug> bug = (List<Bug>) dbs.doHQL(query, params, 1);
+        List<Bug> bug = (List<Bug>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, params, 1);
         
         if (bug.isEmpty())
             return null;

@@ -131,7 +131,7 @@ public class ConfigurationOption extends DAObject {
      */
 	public void setValues(StoredProject sp, List<String> values,
 			boolean overwrite) {
-		DBService dbs = AlitheiaCore.getInstance().getDBService();
+		HQLQueryInterface hqi = AlitheiaCore.getInstance().getDBService().getQueryInterface(HQLQueryInterface.class);
 		
 		String paramProject = "paramProject";
 		String paramConfOpt = "paramConfOpt";
@@ -149,14 +149,14 @@ public class ConfigurationOption extends DAObject {
 		params.put(paramConfOpt, this);
 
 		List<StoredProjectConfig> curValues = 
-			(List<StoredProjectConfig>) dbs.doHQL(query.toString(),params);
+			(List<StoredProjectConfig>) hqi.doHQL(query.toString(),params);
 		boolean found = false;
 		if (overwrite) {
-			dbs.deleteRecords(curValues);
+			hqi.deleteRecords(curValues);
 			for (String newValue : values) {
 				StoredProjectConfig newspc = new StoredProjectConfig(
 						this, newValue, sp);
-				dbs.addRecord(newspc);
+				hqi.addRecord(newspc);
 			}
 		} else { //Merge values
 			for (String newValue : values) {
@@ -168,7 +168,7 @@ public class ConfigurationOption extends DAObject {
 				if (!found) {
 					StoredProjectConfig newspc = new StoredProjectConfig(
 							this, newValue, sp);
-					dbs.addRecord(newspc);
+					hqi.addRecord(newspc);
 				}
 			}
 		}
@@ -197,18 +197,18 @@ public class ConfigurationOption extends DAObject {
 		params.put(paramProject, sp);
 		params.put(paramConfOpt, this);
 		
-		return (List<String>) dbs.doHQL(query.toString(), params);
+		return (List<String>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query.toString(), params);
 	}
 	
 	public static ConfigurationOption fromKey(String key) {
-		DBService dbs = AlitheiaCore.getInstance().getDBService();
+		HQLQueryInterface hqi = AlitheiaCore.getInstance().getDBService().getQueryInterface(HQLQueryInterface.class);
 		
 		String paramKey = "key";
 		
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(paramKey, key);
 		
-		List<ConfigurationOption> opts =  dbs.findObjectsByProperties(ConfigurationOption.class, params);
+		List<ConfigurationOption> opts =  hqi.findObjectsByProperties(ConfigurationOption.class, params);
 		
 		if (opts.isEmpty())
 			return null;

@@ -45,6 +45,7 @@ import eu.sqooss.service.abstractmetric.MetricDeclarations;
 import eu.sqooss.service.abstractmetric.Result;
 import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.Directory;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.Metric;
 import eu.sqooss.service.db.ProjectDirectory;
 import eu.sqooss.service.db.ProjectFile;
@@ -99,7 +100,7 @@ public class Mi extends AbstractMetric {
     
     public void run(ProjectFile pf) throws AlreadyProcessingException {
         
-        pf = db.attachObjectToDBSession(pf);
+        pf = db.getSessionManager().attachObjectToDBSession(pf);
         
         /*MI works at the module level for src directories*/
         if (!pf.getIsDirectory())
@@ -208,7 +209,7 @@ public class Mi extends AbstractMetric {
         Metric m = Metric.getMetricByMnemonic(MNEMONIC_MODMI);
         ProjectFileMeasurement pfm = new ProjectFileMeasurement(m, pf, 
                 String.valueOf(MI));
-        db.addRecord(pfm);
+        db.getQueryInterface().addRecord(pfm);
     }
 
     public List<Result> getResult(ProjectVersion pv, Metric m) {
@@ -264,7 +265,7 @@ public class Mi extends AbstractMetric {
         
         // Get the list of folders which exist in this project version.
         List<ProjectFileMeasurement> srcDirs = 
-            (List<ProjectFileMeasurement>) db.doHQL(q.toString(), params);
+            (List<ProjectFileMeasurement>) db.getQueryInterface(HQLQueryInterface.class).doHQL(q.toString(), params);
 
         // Calculate the metric results
         double miTotal = 0;
@@ -284,7 +285,7 @@ public class Mi extends AbstractMetric {
                     metric, pv, String.valueOf(0));
             
             ams.setResult(String.valueOf(((float) (miTotal / srcDirs.size()))));
-            db.addRecord(ams);
+            db.getQueryInterface().addRecord(ams);
         }
     }
     

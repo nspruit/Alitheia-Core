@@ -100,9 +100,9 @@ public class AdminServiceImpl extends Thread implements AdminService {
         DBService db = null;
         if (AlitheiaCore.getInstance() != null) {
             db = AlitheiaCore.getInstance().getDBService();
-            if (db.isDBSessionActive() != true) {
+            if (db.getSessionManager().isDBSessionActive() != true) {
                 commitDB = true;
-                db.startDBSession();
+                db.getSessionManager().startDBSession();
             }
         }
         
@@ -111,14 +111,14 @@ public class AdminServiceImpl extends Thread implements AdminService {
             a.execute();
         } catch (Exception e) {
             if ((db != null) && commitDB)
-                db.rollbackDBSession();
+                db.getSessionManager().rollbackDBSession();
             err("Error executing action " + a.mnemonic() + ", id " + a.id() + 
                     "\nCause:" + e.getMessage(), e);
         } finally {
             ActionContainer ac = liveactions.get(a.id());
             if (db != null)
-                if (db.isDBSessionActive() && commitDB)
-                    db.commitDBSession();
+                if (db.getSessionManager().isDBSessionActive() && commitDB)
+                    db.getSessionManager().commitDBSession();
             ac.end = System.currentTimeMillis();
             debug("Action " + a.id() + " finished in " + (ac.end - ac.start) + " msec" );
         }

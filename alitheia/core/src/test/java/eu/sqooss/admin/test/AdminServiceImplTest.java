@@ -1,10 +1,12 @@
 package eu.sqooss.admin.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Set;
 
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import eu.sqooss.impl.service.admin.AdminServiceImpl;
@@ -15,13 +17,28 @@ import eu.sqooss.service.admin.actions.RunTimeInfo;
 
 public class AdminServiceImplTest {
 
-    static AdminServiceImpl impl;
-    static long failid;
-    static long successid;
+    private AdminServiceImpl impl;
+    private long failid;
+    private long successid;
 
-    @BeforeClass
-    public static void setUp() {
+    @Before
+    public void setUp() {
         impl = new AdminServiceImpl();
+    }
+    
+    private void setUpRunTimeInfo() {
+    	RunTimeInfo rti = new RunTimeInfo();
+        impl.registerAdminAction(rti.mnemonic(), RunTimeInfo.class);
+    }
+    
+    private void setUpFailingAction() {
+    	FailingAction fa = new FailingAction();
+        impl.registerAdminAction(fa.mnemonic(), FailingAction.class);
+    }
+    
+    private void setUpSucceedingAction() {
+    	SucceedingAction su = new SucceedingAction();
+        impl.registerAdminAction(su.mnemonic(), SucceedingAction.class);
     }
 
     @Test
@@ -31,21 +48,18 @@ public class AdminServiceImplTest {
 
     @Test
     public void testRegisterAdminAction() {
-        RunTimeInfo rti = new RunTimeInfo();
-        impl.registerAdminAction(rti.mnemonic(), RunTimeInfo.class);
-        assertEquals(1, impl.getAdminActions().size());
-
-        FailingAction fa = new FailingAction();
-        impl.registerAdminAction(fa.mnemonic(), FailingAction.class);
-        assertEquals(2, impl.getAdminActions().size());
-
-        SucceedingAction su = new SucceedingAction();
-        impl.registerAdminAction(su.mnemonic(), SucceedingAction.class);
+        setUpRunTimeInfo();
+        setUpFailingAction();
+        setUpSucceedingAction();
         assertEquals(3, impl.getAdminActions().size());
     }
 
     @Test
     public void testGetAdminActions() {
+    	setUpRunTimeInfo();
+    	setUpFailingAction();
+    	setUpSucceedingAction();
+    	
         Set<AdminAction> actions = impl.getAdminActions();
         for (AdminAction aa : actions)
             assertNotNull (aa);
@@ -53,6 +67,8 @@ public class AdminServiceImplTest {
     
     @Test
     public void testCreate() {
+    	setUpFailingAction();
+    	
         AdminAction fail = impl.create("blah");
         assertNull(fail);
 
@@ -70,6 +86,9 @@ public class AdminServiceImplTest {
     
     @Test
     public void testExecute() {
+    	setUpSucceedingAction();
+    	setUpFailingAction();
+    	
         AdminAction success = impl.create("win");
         assertNotNull(success);
         impl.execute(success);
@@ -91,6 +110,7 @@ public class AdminServiceImplTest {
     
     @Test
     public void testShow() {
+    	testExecute();
         AdminAction aa = impl.show(failid);
         assertNotNull(aa);
         
@@ -100,6 +120,7 @@ public class AdminServiceImplTest {
     
     @Test
     public void testGC() {
+    	testExecute();
         try {
             Thread.sleep (300);
         } catch (InterruptedException e) {}

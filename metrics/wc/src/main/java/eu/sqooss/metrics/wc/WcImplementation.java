@@ -53,6 +53,7 @@ import eu.sqooss.service.abstractmetric.AlreadyProcessingException;
 import eu.sqooss.service.abstractmetric.MetricDecl;
 import eu.sqooss.service.abstractmetric.MetricDeclarations;
 import eu.sqooss.service.abstractmetric.Result;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.Metric;
 import eu.sqooss.service.db.ProjectFile;
 import eu.sqooss.service.db.ProjectFileMeasurement;
@@ -120,7 +121,7 @@ public class WcImplementation extends AbstractMetric {
         filter.put("projectFile", a);
         filter.put("metric", m);
         List<ProjectFileMeasurement> measurement =
-            db.findObjectsByProperties(ProjectFileMeasurement.class, filter);
+            db.getQueryInterface().findObjectsByProperties(ProjectFileMeasurement.class, filter);
         
         for (ProjectFileMeasurement pfm : measurement) 
             results.add(new Result(a, m, pfm.getResult(), Result.ResultType.INTEGER));
@@ -252,25 +253,25 @@ public class WcImplementation extends AbstractMetric {
         Metric metric = Metric.getMetricByMnemonic(MNEMONIC_WC_LOC);
         ProjectFileMeasurement locm = new ProjectFileMeasurement(
                 metric,pf,String.valueOf(results[0]));
-        db.addRecord(locm);
+        db.getQueryInterface().addRecord(locm);
         toUpdate.add(metric);
 
         metric = Metric.getMetricByMnemonic(MNEMONIC_WC_LOCOM);
         ProjectFileMeasurement locc = new ProjectFileMeasurement(
                 metric,pf,String.valueOf(results[1]));
-        db.addRecord(locc);
+        db.getQueryInterface().addRecord(locc);
         toUpdate.add(metric);
         
         metric = Metric.getMetricByMnemonic(MNEMONIC_WC_LONB);
         ProjectFileMeasurement lonb = new ProjectFileMeasurement(
                 metric,pf,String.valueOf(results[2]));
-        db.addRecord(lonb);
+        db.getQueryInterface().addRecord(lonb);
         toUpdate.add(metric);
 
         metric = Metric.getMetricByMnemonic(MNEMONIC_WC_WORDS);
         ProjectFileMeasurement words_measure = new ProjectFileMeasurement(
                 metric,pf,String.valueOf(results[3]));
-        db.addRecord(words_measure);
+        db.getQueryInterface().addRecord(words_measure);
         toUpdate.add(metric);
     }
 
@@ -390,7 +391,7 @@ public class WcImplementation extends AbstractMetric {
         filter.put("projectVersion", p);
         filter.put("metric", m);
         List<ProjectVersionMeasurement> measurement =
-            db.findObjectsByProperties(ProjectVersionMeasurement.class, filter);
+            db.getQueryInterface().findObjectsByProperties(ProjectVersionMeasurement.class, filter);
         
         for (ProjectVersionMeasurement pfm : measurement) 
             results.add(new Result(p, m, pfm.getResult(), Result.ResultType.INTEGER));
@@ -440,7 +441,7 @@ public class WcImplementation extends AbstractMetric {
         params.put(paramState, ProjectFileState.deleted());
         
         List<ProjectFileMeasurement> results = 
-            (List<ProjectFileMeasurement>) db.doHQL(q.toString(), params);
+            (List<ProjectFileMeasurement>) db.getQueryInterface(HQLQueryInterface.class).doHQL(q.toString(), params);
         
         long nof = 0;            //Number of files
         int nosf = 0;           //Number of source code files
@@ -488,7 +489,7 @@ public class WcImplementation extends AbstractMetric {
         Metric m = Metric.getMetricByMnemonic(s); 
         ProjectVersionMeasurement pvm = new ProjectVersionMeasurement(m , pv, 
                 String.valueOf(value));
-        db.addRecord(pvm);
+        db.getQueryInterface().addRecord(pvm);
         return m;
     }
 }

@@ -128,7 +128,7 @@ public class Tag extends DAObject {
         parameters.put(paramTagName, tagName);
         parameters.put(paramProject, sp);
 
-        List<?> projectVersions = dbs.doHQL(query, parameters, 1);
+        List<?> projectVersions = dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, parameters, 1);
 
         if (projectVersions == null || projectVersions.size() == 0) {
             return null;
@@ -150,7 +150,7 @@ public class Tag extends DAObject {
         Map<String, Object> parameters = new HashMap<String, Object>();
         parameters.put(paramProject, sp);
 
-        return (List<ProjectVersion>) dbs.doHQL(query, parameters);
+        return (List<ProjectVersion>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, parameters);
 
     }
 

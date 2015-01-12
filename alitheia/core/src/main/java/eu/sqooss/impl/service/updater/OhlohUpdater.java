@@ -106,7 +106,7 @@ public class OhlohUpdater extends UpdaterBaseJob {
         
         
         for (String file : files) {
-            dbs.startDBSession();
+            dbs.getSessionManager().startDBSession();
             
             SAXReader reader = new SAXReader(false);
             Document document = null;
@@ -160,10 +160,10 @@ public class OhlohUpdater extends UpdaterBaseJob {
                     od.setUname(uname);
                 } else {
                     od = new OhlohDeveloper(uname, mailhash, id);
-                    dbs.addRecord(od);
+                    dbs.getQueryInterface().addRecord(od);
                 }
             }
-            dbs.commitDBSession();
+            dbs.getSessionManager().commitDBSession();
         }
     }
     

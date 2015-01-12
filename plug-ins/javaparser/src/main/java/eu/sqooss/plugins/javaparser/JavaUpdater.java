@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import eu.sqooss.core.AlitheiaCore;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.Language;
 import eu.sqooss.service.db.ProjectVersion;
 import eu.sqooss.service.db.StoredProject;
@@ -58,11 +59,11 @@ public class JavaUpdater implements MetadataUpdater, JobStateListener {
     }
 
     public void update() throws Exception {
-        db.startDBSession();
+        db.getSessionManager().startDBSession();
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("sp", sp);
-        List<ProjectVersion> toProcess = (List<ProjectVersion>) db.doHQL(notProcessed, params);
+        List<ProjectVersion> toProcess = (List<ProjectVersion>) db.getQueryInterface(HQLQueryInterface.class).doHQL(notProcessed, params);
 
         if (toProcess.size() == 0) {
             log.info("No versions to process");
@@ -87,7 +88,7 @@ public class JavaUpdater implements MetadataUpdater, JobStateListener {
             } catch(InterruptedException ignored){}
         }
         
-        if (db.isDBSessionActive())db.commitDBSession();
+        if (db.getSessionManager().isDBSessionActive())db.getSessionManager().commitDBSession();
     }
 
     public void jobStateChanged(Job j, State newState) {

@@ -39,6 +39,7 @@ import java.util.List;
 import eu.sqooss.core.AlitheiaCore;
 import eu.sqooss.service.abstractmetric.AlitheiaPlugin;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.Plugin;
 import eu.sqooss.service.db.ProjectVersion;
 import eu.sqooss.service.db.StoredProject;
@@ -65,17 +66,17 @@ public class ProjectDeleteJob extends Job {
     protected void run() throws Exception {
         DBService dbs = core.getDBService();
 
-        if (!dbs.isDBSessionActive()) {
-            dbs.startDBSession();
+        if (!dbs.getSessionManager().isDBSessionActive()) {
+            dbs.getSessionManager().startDBSession();
         }
 
-        sp = dbs.attachObjectToDBSession(sp);
+        sp = dbs.getSessionManager().attachObjectToDBSession(sp);
         // Delete any associated invocation rules first
         HashMap<String, Object> properties = new HashMap<String, Object>();
         properties.put("project", sp);
 
         //Cleanup plugin results
-        List<Plugin> ps = (List<Plugin>) dbs.doHQL("from Plugin");        
+        List<Plugin> ps = (List<Plugin>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL("from Plugin");        
         
         for (Plugin p : ps ) {
             AlitheiaPlugin ap = core.getPluginAdmin().getPlugin(core.getPluginAdmin().getPluginInfo(p.getHashcode()));
@@ -104,16 +105,16 @@ public class ProjectDeleteJob extends Job {
         //Delete the project's config options
         List<StoredProjectConfig> confParams = StoredProjectConfig.fromProject(sp);
         if (!confParams.isEmpty()) {
-        	success &= dbs.deleteRecords(confParams);
+        	success &= dbs.getQueryInterface().deleteRecords(confParams);
         }
         
         // Delete the selected project
-        success &= dbs.deleteRecord(sp);
+        success &= dbs.getQueryInterface().deleteRecord(sp);
 
         if (success) {
-            dbs.commitDBSession();
+            dbs.getSessionManager().commitDBSession();
         } else {
-            dbs.rollbackDBSession();
+            dbs.getSessionManager().rollbackDBSession();
         }
 
     }

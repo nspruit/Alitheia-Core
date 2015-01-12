@@ -222,9 +222,9 @@ public abstract class Job implements Comparable<Job> {
             restart();
             
             /*Idiot/bad programmer proofing*/
-            assert (!dbs.isDBSessionActive());            
-            if (dbs.isDBSessionActive()) {
-                dbs.rollbackDBSession();
+            assert (!dbs.getSessionManager().isDBSessionActive());            
+            if (dbs.getSessionManager().isDBSessionActive()) {
+                dbs.getSessionManager().rollbackDBSession();
                 setState(State.Error); //No uncommitted sessions are tolerated
             } else {
                 if (state() != State.Yielded)
@@ -232,8 +232,8 @@ public abstract class Job implements Comparable<Job> {
             }   
         } catch(Exception e) {
             
-            if (dbs.isDBSessionActive()) {
-                dbs.rollbackDBSession();
+            if (dbs.getSessionManager().isDBSessionActive()) {
+                dbs.getSessionManager().rollbackDBSession();
             }
             
             // In case of an exception, state becomes Error
@@ -505,17 +505,17 @@ public abstract class Job implements Comparable<Job> {
             setState(State.Running);
             resumePoint.resume();
                        
-            assert (!dbs.isDBSessionActive());            
-            if (dbs.isDBSessionActive()) {
-                dbs.rollbackDBSession();
+            assert (!dbs.getSessionManager().isDBSessionActive());            
+            if (dbs.getSessionManager().isDBSessionActive()) {
+                dbs.getSessionManager().rollbackDBSession();
                 setState(State.Error); //No uncommitted sessions are tolerated
             } else {
                 setState(State.Finished);
             }   
         } catch(Exception e) {
             
-            if (dbs.isDBSessionActive()) {
-                dbs.rollbackDBSession();
+            if (dbs.getSessionManager().isDBSessionActive()) {
+                dbs.getSessionManager().rollbackDBSession();
             }
             
             // In case of an exception, state becomes Error

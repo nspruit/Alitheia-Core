@@ -393,7 +393,7 @@ public class FDSServiceImpl implements FDSService, Runnable {
         DBService dbs = AlitheiaCore.getInstance().getDBService();
 
         Long id = Long.parseLong(key.split("|")[1]);
-        return dbs.findObjectById(ProjectVersion.class, id);
+        return dbs.getQueryInterface().findObjectById(ProjectVersion.class, id);
     }
 
     /**

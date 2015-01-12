@@ -115,11 +115,11 @@ public class StoredProjectConfig extends DAObject {
 	}
 	
 	public static List<StoredProjectConfig> fromProject(StoredProject sp) {
-		DBService dbs = AlitheiaCore.getInstance().getDBService();
+		QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
 		
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("project", sp);
 		
-		return dbs.findObjectsByProperties(StoredProjectConfig.class, params);
+		return qi.findObjectsByProperties(StoredProjectConfig.class, params);
 	}
 }

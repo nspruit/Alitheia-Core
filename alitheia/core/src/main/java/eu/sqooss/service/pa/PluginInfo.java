@@ -40,11 +40,13 @@ import java.util.Set;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
+import eu.sqooss.core.AlitheiaCore;
 import eu.sqooss.service.abstractmetric.AlitheiaPlugin;
 import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.Plugin;
 import eu.sqooss.service.db.PluginConfiguration;
+import eu.sqooss.service.db.QueryInterface;
 import eu.sqooss.service.util.StringUtils;
 
 /**
@@ -301,7 +303,7 @@ public class PluginInfo implements Comparable<PluginInfo> {
                 }
 
                 // Update the given configuration property
-                pc = db.attachObjectToDBSession(pc);
+                pc = db.getSessionManager().attachObjectToDBSession(pc);
                 pc.setValue(newVal);
                 return true;
             }
@@ -412,14 +414,16 @@ public class PluginInfo implements Comparable<PluginInfo> {
                 || (ConfigurationType.fromString(type) == null)) {
             throw new Exception("Invalid type!");
         }
+        
+        QueryInterface qi = db.getQueryInterface();
 
         // Get the property's Id
         Long propId = getConfPropId(name, type);
         if (propId != null) {
             // Remove the specified configuration property
-            PluginConfiguration prop = db.findObjectById(
+            PluginConfiguration prop = qi.findObjectById(
                     PluginConfiguration.class, propId);
-            if ((prop != null) && (db.deleteRecord(prop))) {
+            if ((prop != null) && (qi.deleteRecord(prop))) {
                 return true;
             }
         }

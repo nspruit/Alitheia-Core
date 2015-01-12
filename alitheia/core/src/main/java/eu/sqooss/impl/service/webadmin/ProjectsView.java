@@ -135,7 +135,7 @@ public class ProjectsView extends AbstractView {
             // Retrieve the selected project's DAO (if any)
             reqValProjectId = fromString(req.getParameter(REQ_PAR_PROJECT_ID));
             if (reqValProjectId != null) {
-                selProject = sobjDB.findObjectById(
+                selProject = sobjDB.getQueryInterface().findObjectById(
                         StoredProject.class, reqValProjectId);
             }
             

@@ -502,8 +502,8 @@ public class FindbugsMetrics extends AbstractMetric {
                 versionMeasurements.add(new ProjectVersionMeasurement(m, pv, bugTotal.toString()));
             }
         }
-        db.addRecords(fileMeasurements);
-        db.addRecords(versionMeasurements);
+        db.getQueryInterface().addRecords(fileMeasurements);
+        db.getQueryInterface().addRecords(versionMeasurements);
     }
 
     private boolean pvMeasurementExists(ProjectVersion pv, Metric m) {
@@ -516,7 +516,7 @@ public class FindbugsMetrics extends AbstractMetric {
         parameters.put("metric", m);
         parameters.put("version", pv);
 
-        return db.doHQL(q, parameters).size() > 0;
+        return db.getQueryInterface(HQLQueryInterface.class).doHQL(q, parameters).size() > 0;
     }
 
     private ProjectFile findFile(List<ProjectFile> files, String path) {

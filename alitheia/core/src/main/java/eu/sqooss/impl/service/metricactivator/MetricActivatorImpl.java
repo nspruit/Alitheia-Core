@@ -37,6 +37,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import eu.sqooss.service.abstractmetric.InvocationOrder;
+
 import org.osgi.framework.BundleContext;
 
 import eu.sqooss.core.AlitheiaCore;
@@ -51,6 +52,7 @@ import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.EncapsulationUnit;
 import eu.sqooss.service.db.ExecutionUnit;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.MailMessage;
 import eu.sqooss.service.db.MailingList;
 import eu.sqooss.service.db.MailingListThread;
@@ -132,7 +134,7 @@ public class MetricActivatorImpl  implements MetricActivator {
     @Override
     public void syncMetrics(AlitheiaPlugin ap) {
         List<StoredProject> lp = 
-            (List<StoredProject>) db.doHQL("from StoredProject");
+            (List<StoredProject>) db.getQueryInterface(HQLQueryInterface.class).doHQL("from StoredProject");
         
         for(StoredProject sp : lp) {
             syncMetric(ap, sp);
@@ -286,7 +288,7 @@ public class MetricActivatorImpl  implements MetricActivator {
         @Override
         protected void run() throws Exception {
             DBService dbs = AlitheiaCore.getInstance().getDBService();
-            dbs.startDBSession();
+            dbs.getSessionManager().startDBSession();
             sp = DAObject.loadDAObyId(sp.getId(), StoredProject.class);
             PluginInfo mi = pa.getPluginInfo(m);
             Set<Class<? extends DAObject>> actTypes = mi.getActivationTypes();
@@ -364,7 +366,7 @@ public class MetricActivatorImpl  implements MetricActivator {
             	}
             }
             sched.enqueueNoDependencies(jobs);
-            dbs.commitDBSession();
+            dbs.getSessionManager().commitDBSession();
         }
         
         @Override

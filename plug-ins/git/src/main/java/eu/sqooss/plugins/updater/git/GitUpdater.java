@@ -150,8 +150,8 @@ public class GitUpdater implements MetadataUpdater {
 
     public void update() throws Exception {
        
-        dbs.startDBSession();
-        project = dbs.attachObjectToDBSession(project);
+        dbs.getSessionManager().startDBSession();
+        project = dbs.getSessionManager().attachObjectToDBSession(project);
         
         
         info("Running source update for project " + project.getName() 
@@ -167,7 +167,7 @@ public class GitUpdater implements MetadataUpdater {
             if (r.compareTo(git.newRevision(latestVersion.getRevisionId())) <= 0) {
                 info("Project is already at the newest version: " 
                         + r.getUniqueId());
-                dbs.commitDBSession();
+                dbs.getSessionManager().commitDBSession();
                 return;    
             }
             next = git.newRevision(latestVersion.getRevisionId());
@@ -188,7 +188,7 @@ public class GitUpdater implements MetadataUpdater {
         int numRevisions = 0;
 
         CommitLog commitLog = git.getCommitLog("", from, to);
-        if(!dbs.isDBSessionActive()) dbs.startDBSession();
+        if(!dbs.getSessionManager().isDBSessionActive()) dbs.getSessionManager().startDBSession();
 
         for (Revision entry : commitLog) {
         	if (ProjectVersion.getVersionByRevision(project, entry.getUniqueId()) != null) {
@@ -206,12 +206,12 @@ public class GitUpdater implements MetadataUpdater {
             
             updateValidUntil(pv, pv.getVersionFiles());
 
-            if (!dbs.commitDBSession()) {
+            if (!dbs.getSessionManager().commitDBSession()) {
                 warn("Intermediate commit failed, failing update");
                 return;
             }
             
-            dbs.startDBSession();
+            dbs.getSessionManager().startDBSession();
             progress = (float) (((double)numRevisions / (double)commitLog.size()) * 100);
             
             numRevisions++;
@@ -236,14 +236,14 @@ public class GitUpdater implements MetadataUpdater {
 
         pv.setCommitMsg(commitMsg);
         pv.setSequence(Integer.MAX_VALUE);
-        dbs.addRecord(pv);
+        dbs.getQueryInterface().addRecord(pv);
         
         //Tags
         String tag = git.allTags().get(entry.getUniqueId());
         if (tag != null) {
             Tag t = new Tag(pv);
             t.setName(tag);
-            dbs.addRecord(t);
+            dbs.getQueryInterface().addRecord(t);
             pv.getTags().add(t);
         }
         
@@ -263,7 +263,7 @@ public class GitUpdater implements MetadataUpdater {
             //Parent is a branch
             if (git.getCommitChidren(parentId).length > 1) {
                 Branch b = new Branch(project, Branch.suggestName(project));
-                dbs.addRecord(b);
+                dbs.getQueryInterface().addRecord(b);
                 parent.getOutgoingBranches().add(b);
                 pv.getIncomingBranches().add(b);
             } else {
@@ -279,7 +279,7 @@ public class GitUpdater implements MetadataUpdater {
             //New line of development
             if (entry.getParentIds().size() == 0) {
                 Branch b = new Branch(project, Branch.suggestName(project));
-                dbs.addRecord(b);
+                dbs.getQueryInterface().addRecord(b);
                 pv.getOutgoingBranches().add(b);
             } else {
                 pv.getOutgoingBranches().addAll(pv.getIncomingBranches());
