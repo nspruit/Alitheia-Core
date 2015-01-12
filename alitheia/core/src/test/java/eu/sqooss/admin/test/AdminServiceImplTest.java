@@ -1,10 +1,12 @@
 package eu.sqooss.admin.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Set;
 
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import eu.sqooss.impl.service.admin.AdminServiceImpl;
@@ -19,8 +21,8 @@ public class AdminServiceImplTest {
     static long failid;
     static long successid;
 
-    @BeforeClass
-    public static void setUp() {
+    @Before
+    public void setUp() {
         impl = new AdminServiceImpl();
     }
 
@@ -91,6 +93,7 @@ public class AdminServiceImplTest {
     
     @Test
     public void testShow() {
+    	testCreate();
         AdminAction aa = impl.show(failid);
         assertNotNull(aa);
         
@@ -100,6 +103,7 @@ public class AdminServiceImplTest {
     
     @Test
     public void testGC() {
+    	testExecute();
         try {
             Thread.sleep (300);
         } catch (InterruptedException e) {}
