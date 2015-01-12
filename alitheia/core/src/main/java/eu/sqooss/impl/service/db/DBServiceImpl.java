@@ -810,6 +810,20 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 		this.bc = bc;
         this.logger = l;
 	}
+	
+	/**
+	 * Prepare the DB service for testing by injecting a custom SessionFactory.
+	 * Note: this should NOT be used in production code.
+	 * 
+	 * @param s a custom SessionFactory object
+	 * @param setInitialised true if the DBServiceImpl should be considered initialised
+	 * @param l the logger to use for the DB service
+	 */
+	public void prepareForTest(SessionFactory s, boolean setInitialised, Logger l) {
+		this.sessionFactory = s;
+		this.logger = l;
+		isInitialised.set(setInitialised);
+	}
 }
 
 //vi: ai nosi sw=4 ts=4 expandtab
