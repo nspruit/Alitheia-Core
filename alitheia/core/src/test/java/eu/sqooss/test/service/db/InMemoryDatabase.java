@@ -7,6 +7,7 @@ import org.hibernate.cfg.AnnotationConfiguration;
 import org.mockito.Mockito;
 
 import eu.sqooss.impl.service.db.DBServiceImpl;
+import eu.sqooss.service.db.*;
 import eu.sqooss.service.logging.Logger;
 
 public final class InMemoryDatabase {
@@ -66,6 +67,49 @@ public final class InMemoryDatabase {
 		if (sessionFactory.getCurrentSession().getTransaction() != null &&
 				sessionFactory.getCurrentSession().getTransaction().isActive())
 			sessionFactory.getCurrentSession().getTransaction().rollback();
+	}
+	
+	public static InMemoryDatabase createDefault() {
+		return new InMemoryDatabase(new Class<?>[] {
+				Bug.class,
+				BugStatus.class,
+				BugReportMessage.class,
+				BugSeverity.class,
+				BugPriority.class,
+				BugResolution.class,
+				MailingList.class,
+				MailMessage.class,
+				MailingListThread.class,
+				ProjectVersion.class,
+				ProjectFile.class,
+				ProjectFileState.class,
+				Developer.class,
+				DeveloperAlias.class,
+				Directory.class,
+				Tag.class,
+				Branch.class,
+				StoredProject.class,
+				StoredProjectConfig.class,
+				ConfigurationOption.class,
+				ClusterNode.class,
+				Plugin.class,
+				PluginConfiguration.class,
+				Metric.class,
+				MetricType.class,
+				StoredProjectMeasurement.class,
+				ProjectVersionMeasurement.class,
+				ProjectFileMeasurement.class,
+				MailingListThreadMeasurement.class,
+				MailMessageMeasurement.class,
+				OhlohDeveloper.class,
+				ProjectVersionParent.class,
+				NameSpace.class,
+				ExecutionUnit.class,
+				EncapsulationUnit.class,
+				NameSpaceMeasurement.class,
+				ExecutionUnitMeasurement.class,
+				EncapsulationUnitMeasurement.class
+		});
 	}
 	
 }
