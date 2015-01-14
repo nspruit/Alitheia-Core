@@ -5,12 +5,10 @@ import static org.hamcrest.Matchers.*;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hamcrest.Matchers;
 import org.hibernate.QueryException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -201,6 +199,83 @@ public class DBHQLQueryTest {
 		// Select second object using a parameter
 		db.getDatabase().doHQL("select o from DBObject o where o.name in (:namelist)",
 				new HashMap<String, Object>(), new HashMap<String, Collection>());
+	}
+	
+	@Test(expected = QueryException.class)
+	public void testExecuteUpdate_missingParameter() {
+		// Insert test object
+		DBObject objA = new DBObject("object");
+		db.addTestObject(objA);
+		
+		// Update the name of the test object
+		db.getDatabase().executeUpdate("update DBObject set object_name = :newname where object_id = :obj_id", null);
+	}
+	
+	@Test
+	public void testExecuteUpdate_oneObject() {
+		// Insert test objects
+		DBObject objA = new DBObject("object");
+		DBObject objB = new DBObject("object");
+		db.addTestObject(objA);
+		db.addTestObject(objB);
+		
+		// Update the name of the test object
+		Map<String, Object> params = new HashMap<>();
+		params.put("newname", "changed");
+		params.put("obj_id", objA.getId());
+		int rows = db.getDatabase().executeUpdate("update DBObject set name = :newname where id = :obj_id", params);
+		// Commit the change
+		db.getDatabase().commitDBSession();
+		
+		try {
+			// Start a new session to read the changes
+			db.getDatabase().startDBSession();
+			List<?> res = db.getDatabase().doHQL("from DBObject");
+			
+			assertThat(rows, equalTo(1));
+			assertThat(db.getTestObject(DBObject.class, objA.getId()).getName(), equalTo("changed"));
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			db.getDatabase().startDBSession();
+			db.getDatabase().executeUpdate("delete from DBObject", null);
+			db.getDatabase().commitDBSession();
+		}
+	}
+	
+	@Test
+	public void testExecuteUpdate_multipleObjects() {
+		// Insert test objects
+		DBObject objA = new DBObject("object-a");
+		DBObject objB = new DBObject("object-b");
+		DBObject objC = new DBObject("object-c");
+		db.addTestObject(objA);
+		db.addTestObject(objB);
+		db.addTestObject(objC);
+		
+		// Update the name of the test object
+		Map<String, Object> params = new HashMap<>();
+		params.put("newname", "changed");
+		int rows = db.getDatabase().executeUpdate("update DBObject set name = :newname", params);
+		// Commit the change
+		db.getDatabase().commitDBSession();
+		
+		try {
+			// Start a new session to read the changes
+			db.getDatabase().startDBSession();
+			List<?> res = db.getDatabase().doHQL("from DBObject");
+			
+			assertThat(rows, equalTo(3));
+			assertThat(db.getTestObject(DBObject.class, objA.getId()).getName(), equalTo("changed"));
+			assertThat(db.getTestObject(DBObject.class, objB.getId()).getName(), equalTo("changed"));
+			assertThat(db.getTestObject(DBObject.class, objC.getId()).getName(), equalTo("changed"));
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			db.getDatabase().startDBSession();
+			db.getDatabase().executeUpdate("delete from DBObject", null);
+			db.getDatabase().commitDBSession();
+		}
 	}
 	
 }
