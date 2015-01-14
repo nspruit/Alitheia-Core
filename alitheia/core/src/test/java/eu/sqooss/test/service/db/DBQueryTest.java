@@ -3,9 +3,11 @@ package eu.sqooss.test.service.db;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +90,7 @@ public class DBQueryTest {
 	}
 
 	@Test
-	public void testFindObjectById(){
+	public void testFindObjectById_success(){
 		DBObject objC = construct(objNameC);
 		
 		// Store object and verify it succeeded
@@ -98,6 +100,24 @@ public class DBQueryTest {
 		// Check whether the findObjectById function returns the correct object
 		DBObject storedObjC = (DBObject)db.getDatabase().findObjectById(DBObject.class, objC.getId());
 		assertEquals(objC, storedObjC);
+	}
+	
+	@Test
+	public void testFindObjectById_no_active_session(){
+		DBObject objC = construct(objNameC);
+		
+		// Store object and verify it succeeded
+		boolean result = db.getDatabase().addRecord(objC);
+		assertTrue(result);
+		
+		// Make sure there is no active transaction
+		closeTransaction(); 
+		
+		// Check whether the findObjectById function returns null
+		DBObject storedObjC = (DBObject)db.getDatabase().findObjectById(DBObject.class, objC.getId());
+		assertNull(storedObjC);
+		
+		beginTransaction(); //necessary for closeTransaction() to succeed
 	}
 	
 	@Test
@@ -111,10 +131,6 @@ public class DBQueryTest {
 		// Check whether the findObjectByIdForUpdate function returns the correct object
 		DBObject storedObjD = (DBObject)db.getDatabase().findObjectByIdForUpdate(DBObject.class, objD.getId());
 		assertEquals(objD, storedObjD);
-		
-		// Check whether the object has at least the UPGRADE lock => mode is not UPDRAGE as expected?
-//		LockMode mode = db.getSessionFactory().getCurrentSession().getCurrentLockMode(storedObjD);
-//		assertEquals(LockMode.UPGRADE,mode);
 	}
 	
 	@Test
@@ -133,6 +149,28 @@ public class DBQueryTest {
 		List<DBObject> res = db.getDatabase().findObjectsByProperties(DBObject.class, properties);
 		assertEquals(1, res.size());
 		assertEquals(objD, res.get(0));
+	}
+	
+	@Test
+	public void testFindObjectsByProperties_no_active_session(){
+		DBObject objD = construct(objNameD);
+		
+		// Store object and verify it succeeded
+		boolean result = db.getDatabase().addRecord(objD);
+		assertTrue(result);
+		
+		// Make sure there is no active transaction
+		closeTransaction(); 
+				
+		// Create a map with properties of objD
+		Map<String,Object> properties = new HashMap<String,Object>();
+		properties.put("name", objNameD);		
+		
+		// Check whether the findObjectsByProperties function returns the empty list
+		List<DBObject> res = db.getDatabase().findObjectsByProperties(DBObject.class, properties);
+		assertEquals(Collections.emptyList(),res);
+		
+		beginTransaction(); //necessary for closeTransaction() to succeed
 	}
 	
 	@Test
