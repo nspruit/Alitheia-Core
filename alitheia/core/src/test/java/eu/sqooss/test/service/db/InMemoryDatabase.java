@@ -1,5 +1,7 @@
 package eu.sqooss.test.service.db;
 
+import java.io.Serializable;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
 import org.mockito.Mockito;
@@ -19,18 +21,6 @@ public final class InMemoryDatabase {
 		db.prepareForTest(sessionFactory, true, Mockito.mock(Logger.class));
 	}
 	
-	public void close() {
-		sessionFactory.close();
-	}
-	
-	public SessionFactory getSessionFactory() {
-		return sessionFactory;
-	}
-	
-	public DBServiceImpl getDatabase() {
-		return db;
-	}
-	
 	private void setUpDatabase(Class<?>[] annotatedClasses) {
 		// setup the session factory
 		AnnotationConfiguration configuration = new AnnotationConfiguration();
@@ -45,6 +35,37 @@ public final class InMemoryDatabase {
 		configuration.setProperty("hibernate.current_session_context_class", "thread");
 		 
 		sessionFactory = configuration.buildSessionFactory();
+	}
+	
+	public void close() {
+		sessionFactory.close();
+	}
+	
+	public SessionFactory getSessionFactory() {
+		return sessionFactory;
+	}
+	
+	public DBServiceImpl getDatabase() {
+		return db;
+	}
+	
+	public void addTestObject(Object obj) {
+		sessionFactory.getCurrentSession().save(obj);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T> T getTestObject(Class<T> clazz, Serializable id) {
+		return (T)sessionFactory.getCurrentSession().get(clazz, id);
+	}
+
+	public void startTransaction() {
+		sessionFactory.getCurrentSession().beginTransaction();
+	}
+	
+	public void stopTransaction() {
+		if (sessionFactory.getCurrentSession().getTransaction() != null &&
+				sessionFactory.getCurrentSession().getTransaction().isActive())
+			sessionFactory.getCurrentSession().getTransaction().rollback();
 	}
 	
 }

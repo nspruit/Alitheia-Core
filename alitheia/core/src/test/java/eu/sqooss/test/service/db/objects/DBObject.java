@@ -21,6 +21,13 @@ public class DBObject extends DAObject {
 	@Column(name="OBJECT_NAME")
 	private String name;
 
+	// Required for Hibernate
+	public DBObject() { }
+	
+	public DBObject(String name) {
+		this.name = name;
+	}
+	
 	@Override
 	public long getId() {
 		return id;
