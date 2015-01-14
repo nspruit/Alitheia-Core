@@ -1,9 +1,15 @@
 package eu.sqooss.test.service.db;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
-import org.hibernate.LockMode;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -109,5 +115,64 @@ public class DBQueryTest {
 		// Check whether the object has at least the UPGRADE lock => mode is not UPDRAGE as expected?
 //		LockMode mode = db.getSessionFactory().getCurrentSession().getCurrentLockMode(storedObjD);
 //		assertEquals(LockMode.UPGRADE,mode);
+	}
+	
+	@Test
+	public void testFindObjectsByProperties_single_property(){
+		DBObject objD = construct(objNameD);
+		
+		// Store object and verify it succeeded
+		boolean result = db.getDatabase().addRecord(objD);
+		assertTrue(result);
+		
+		// Create a map with properties of objD
+		Map<String,Object> properties = new HashMap<String,Object>();
+		properties.put("name", objNameD);
+		
+		// Check whether the findObjectsByProperties function returns a list with only objD in it
+		List<DBObject> res = db.getDatabase().findObjectsByProperties(DBObject.class, properties);
+		assertEquals(1, res.size());
+		assertEquals(objD, res.get(0));
+	}
+	
+	@Test
+	public void testFindObjectsByProperties_multiple_properties(){
+		DBObject objD = construct(objNameD);
+		
+		// Store object and verify it succeeded
+		boolean result = db.getDatabase().addRecord(objD);
+		assertTrue(result);
+		
+		// Create a map with properties of objD
+		Map<String,Object> properties = new HashMap<String,Object>();
+		properties.put("id", objD.getId());
+		properties.put("name", objNameD);
+		
+		// Check whether the findObjectsByProperties function returns a list with only objD in it
+		List<DBObject> res = db.getDatabase().findObjectsByProperties(DBObject.class, properties);
+		assertEquals(1, res.size());
+		assertEquals(objD, res.get(0));
+	}
+	
+	@Test
+	public void testFindObjectsByProperties_multiple_results(){
+		DBObject objD = construct(objNameD);
+		DBObject objD2 = construct(objNameD);
+		
+		// Store objects and verify it succeeded
+		boolean result = db.getDatabase().addRecord(objD);
+		assertTrue(result);
+		result = db.getDatabase().addRecord(objD2);
+		assertTrue(result);
+		
+		// Create a map with the common name property of objD and objD2
+		Map<String,Object> properties = new HashMap<String,Object>();
+		properties.put("name", objNameD);
+		
+		// Check whether the findObjectsByProperties function returns a list with only objD and objD2 in it
+		List<DBObject> res = db.getDatabase().findObjectsByProperties(DBObject.class, properties);
+		assertEquals(2, res.size());
+		assertTrue(res.contains(objD));
+		assertTrue(res.contains(objD2));
 	}
 }
