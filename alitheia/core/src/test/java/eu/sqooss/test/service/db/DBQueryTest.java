@@ -42,23 +42,17 @@ public class DBQueryTest {
 	
 	@Before
 	public void beginTransaction() {
-		db.getSessionFactory().getCurrentSession().beginTransaction();
+		db.startTransaction();
 	}
 	
 	@After
 	public void closeTransaction() {
-		db.getSessionFactory().getCurrentSession().getTransaction().rollback();
-	}
-	
-	private DBObject construct(String name) {
-		DBObject obj = new DBObject();
-		obj.setName(name);
-		return obj;
+		db.stopTransaction();
 	}
 	
 	@Test
 	public void testAddRecord() {
-		DBObject obj = construct(objNameA);
+		DBObject obj = new DBObject(objNameA);
 
 		// Store the object and assert that it succeeded
 		boolean result = db.getDatabase().addRecord(obj);
@@ -71,7 +65,7 @@ public class DBQueryTest {
 	
 	@Test
 	public void testAddRecord_no_active_session() {
-		DBObject obj = construct(objNameA);
+		DBObject obj = new DBObject(objNameA);
 		
 		// Make sure there is no active transaction
 		closeTransaction(); 
@@ -85,8 +79,8 @@ public class DBQueryTest {
 	
 	@Test
 	public void testAddRecord_multiple() {
-		DBObject objA = construct(objNameA);
-		DBObject objB = construct(objNameB);
+		DBObject objA = new DBObject(objNameA);
+		DBObject objB = new DBObject(objNameB);
 
 		// Store both objects and assert that it succeeded
 		boolean result = db.getDatabase().addRecord(objA);
@@ -106,7 +100,7 @@ public class DBQueryTest {
 	
 	@Test
 	public void testDeleteRecord() {
-		DBObject obj = construct(objNameA);
+		DBObject obj = new DBObject(objNameA);
 
 		// Store the object and assert that it succeeded
 		boolean result = db.getDatabase().addRecord(obj);
@@ -127,7 +121,7 @@ public class DBQueryTest {
 	
 	@Test
 	public void testDeleteRecord_no_active_session() {
-		DBObject obj = construct(objNameA);
+		DBObject obj = new DBObject(objNameA);
 
 		// Store the object and assert that it succeeded
 		boolean result = db.getDatabase().addRecord(obj);
@@ -149,8 +143,8 @@ public class DBQueryTest {
 	
 	@Test
 	public void testDeleteRecord_multiple_adds_one_delete() {
-		DBObject objA = construct(objNameA);
-		DBObject objB = construct(objNameB);
+		DBObject objA = new DBObject(objNameA);
+		DBObject objB = new DBObject(objNameB);
 		
 		// Store both objects and assert that it succeeded
 		boolean result = db.getDatabase().addRecord(objA);
@@ -177,7 +171,7 @@ public class DBQueryTest {
 
 	@Test
 	public void testFindObjectById_success(){
-		DBObject objC = construct(objNameC);
+		DBObject objC = new DBObject(objNameC);
 		
 		// Store object and verify it succeeded
 		boolean result = db.getDatabase().addRecord(objC);
@@ -190,7 +184,7 @@ public class DBQueryTest {
 	
 	@Test
 	public void testFindObjectById_no_active_session(){
-		DBObject objC = construct(objNameC);
+		DBObject objC = new DBObject(objNameC);
 		
 		// Store object and verify it succeeded
 		boolean result = db.getDatabase().addRecord(objC);
@@ -208,7 +202,7 @@ public class DBQueryTest {
 	
 	@Test
 	public void testFindObjectByIdForUpdate(){
-		DBObject objD = construct(objNameD);
+		DBObject objD = new DBObject(objNameD);
 		
 		// Store object and verify it succeeded
 		boolean result = db.getDatabase().addRecord(objD);
@@ -221,7 +215,7 @@ public class DBQueryTest {
 	
 	@Test
 	public void testFindObjectsByProperties_single_property(){
-		DBObject objD = construct(objNameD);
+		DBObject objD = new DBObject(objNameD);
 		
 		// Store object and verify it succeeded
 		boolean result = db.getDatabase().addRecord(objD);
@@ -239,7 +233,7 @@ public class DBQueryTest {
 	
 	@Test
 	public void testFindObjectsByProperties_no_active_session(){
-		DBObject objD = construct(objNameD);
+		DBObject objD = new DBObject(objNameD);
 		
 		// Store object and verify it succeeded
 		boolean result = db.getDatabase().addRecord(objD);
@@ -261,7 +255,7 @@ public class DBQueryTest {
 	
 	@Test
 	public void testFindObjectsByProperties_multiple_properties(){
-		DBObject objD = construct(objNameD);
+		DBObject objD = new DBObject(objNameD);
 		
 		// Store object and verify it succeeded
 		boolean result = db.getDatabase().addRecord(objD);
@@ -280,8 +274,8 @@ public class DBQueryTest {
 	
 	@Test
 	public void testFindObjectsByProperties_multiple_results(){
-		DBObject objD = construct(objNameD);
-		DBObject objD2 = construct(objNameD);
+		DBObject objD = new DBObject(objNameD);
+		DBObject objD2 = new DBObject(objNameD);
 		
 		// Store objects and verify it succeeded
 		boolean result = db.getDatabase().addRecord(objD);
@@ -302,7 +296,7 @@ public class DBQueryTest {
 	
 	@Test
 	public void testFindObjectsByPropertiesForUpdate_single_property(){
-		DBObject objD = construct(objNameD);
+		DBObject objD = new DBObject(objNameD);
 		
 		// Store object and verify it succeeded
 		boolean result = db.getDatabase().addRecord(objD);
@@ -320,7 +314,7 @@ public class DBQueryTest {
 	
 	@Test
 	public void testFindObjectsByPropertiesForUpdate_multiple_properties(){
-		DBObject objD = construct(objNameD);
+		DBObject objD = new DBObject(objNameD);
 		
 		// Store object and verify it succeeded
 		boolean result = db.getDatabase().addRecord(objD);
@@ -339,8 +333,8 @@ public class DBQueryTest {
 	
 	@Test
 	public void testFindObjectsByPropertiesForUpdate_multiple_results(){
-		DBObject objD = construct(objNameD);
-		DBObject objD2 = construct(objNameD);
+		DBObject objD = new DBObject(objNameD);
+		DBObject objD2 = new DBObject(objNameD);
 		
 		// Store objects and verify it succeeded
 		boolean result = db.getDatabase().addRecord(objD);
