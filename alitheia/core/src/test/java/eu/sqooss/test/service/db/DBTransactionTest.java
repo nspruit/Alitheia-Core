@@ -3,6 +3,7 @@ package eu.sqooss.test.service.db;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -13,6 +14,7 @@ import org.mockito.Mockito;
 
 import eu.sqooss.impl.service.db.DBServiceImpl;
 import eu.sqooss.service.logging.Logger;
+import eu.sqooss.test.service.db.objects.DBObject;
 
 public class DBTransactionTest {
 
@@ -316,6 +318,68 @@ public class DBTransactionTest {
 		assertTrue(result);
 		verify(ss).flush();
 		verify(ss).clear();
+	}
+	
+	@Test
+	public void testAttachObjectToDBSession_withoutSession() {
+		// Prepare session
+		SessionFactory s = mock(SessionFactory.class);
+		Session ss = mock(Session.class);
+		when(s.getCurrentSession()).thenReturn(ss);
+		
+		db.prepareForTest(s, true, l);
+		
+		DBObject obj = db.attachObjectToDBSession(new DBObject("test-object"));
+		
+		assertNull(obj);
+	}
+	
+	@Test
+	public void testAttachObjectToDBSession_notYetAttached() {
+		// Prepare session
+		SessionFactory s = mock(SessionFactory.class);
+		Session ss = mock(Session.class);
+		when(s.getCurrentSession()).thenReturn(ss);
+		
+		// Prepare transaction
+		Transaction t = mock(Transaction.class);
+		when(ss.getTransaction()).thenReturn(t);
+		when(t.isActive()).thenReturn(true);
+		
+		db.prepareForTest(s, true, l);
+		
+		DBObject unbound = new DBObject("test-object");
+		DBObject merged = new DBObject("merged-object");
+		when(ss.contains(unbound)).thenReturn(false);
+		when(ss.merge(unbound)).thenReturn(merged);
+		DBObject obj = db.attachObjectToDBSession(unbound);
+		
+		assertEquals(merged, obj);
+		
+		verify(ss).merge(unbound);
+	}
+	
+	@Test
+	public void testAttachObjectToDBSession_alreadyAttached() {
+		// Prepare session
+		SessionFactory s = mock(SessionFactory.class);
+		Session ss = mock(Session.class);
+		when(s.getCurrentSession()).thenReturn(ss);
+		
+		// Prepare transaction
+		Transaction t = mock(Transaction.class);
+		when(ss.getTransaction()).thenReturn(t);
+		when(t.isActive()).thenReturn(true);
+		
+		db.prepareForTest(s, true, l);
+		
+		DBObject unbound = new DBObject("test-object");
+		when(ss.contains(unbound)).thenReturn(true);
+		DBObject obj = db.attachObjectToDBSession(unbound);
+		
+		assertSame(unbound, obj);
+		
+		verify(ss, never()).merge(unbound);
 	}
 	
 }
