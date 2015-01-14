@@ -3,6 +3,7 @@ package eu.sqooss.test.service.db;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
+import org.hibernate.LockMode;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -15,6 +16,8 @@ public class DBQueryTest {
 
 	private static final String objNameA = "test-object-a";
 	private static final String objNameB = "test-object-b";
+	private static final String objNameC = "test-object-c";
+	private static final String objNameD = "test-object-d";
 	
 	private static InMemoryDatabase db;
 	
@@ -78,4 +81,33 @@ public class DBQueryTest {
 		assertEquals(objB, storedObjB);
 	}
 
+	@Test
+	public void testFindObjectById(){
+		DBObject objC = construct(objNameC);
+		
+		// Store object and verify it succeeded
+		boolean result = db.getDatabase().addRecord(objC);
+		assertTrue(result);
+		
+		// Check whether the findObjectById function returns the correct object
+		DBObject storedObjC = (DBObject)db.getDatabase().findObjectById(DBObject.class, objC.getId());
+		assertEquals(objC, storedObjC);
+	}
+	
+	@Test
+	public void testFindObjectByIdForUpdate(){
+		DBObject objD = construct(objNameD);
+		
+		// Store object and verify it succeeded
+		boolean result = db.getDatabase().addRecord(objD);
+		assertTrue(result);
+		
+		// Check whether the findObjectByIdForUpdate function returns the correct object
+		DBObject storedObjD = (DBObject)db.getDatabase().findObjectByIdForUpdate(DBObject.class, objD.getId());
+		assertEquals(objD, storedObjD);
+		
+		// Check whether the object has at least the UPGRADE lock => mode is not UPDRAGE as expected?
+//		LockMode mode = db.getSessionFactory().getCurrentSession().getCurrentLockMode(storedObjD);
+//		assertEquals(LockMode.UPGRADE,mode);
+	}
 }
