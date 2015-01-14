@@ -175,4 +175,63 @@ public class DBQueryTest {
 		assertTrue(res.contains(objD));
 		assertTrue(res.contains(objD2));
 	}
+	
+	@Test
+	public void testFindObjectsByPropertiesForUpdate_single_property(){
+		DBObject objD = construct(objNameD);
+		
+		// Store object and verify it succeeded
+		boolean result = db.getDatabase().addRecord(objD);
+		assertTrue(result);
+		
+		// Create a map with properties of objD
+		Map<String,Object> properties = new HashMap<String,Object>();
+		properties.put("name", objNameD);
+		
+		// Check whether the findObjectsByPropertiesForUpdate function returns a list with only objD in it
+		List<DBObject> res = db.getDatabase().findObjectsByPropertiesForUpdate(DBObject.class, properties);
+		assertEquals(1, res.size());
+		assertEquals(objD, res.get(0));
+	}
+	
+	@Test
+	public void testFindObjectsByPropertiesForUpdate_multiple_properties(){
+		DBObject objD = construct(objNameD);
+		
+		// Store object and verify it succeeded
+		boolean result = db.getDatabase().addRecord(objD);
+		assertTrue(result);
+		
+		// Create a map with properties of objD
+		Map<String,Object> properties = new HashMap<String,Object>();
+		properties.put("id", objD.getId());
+		properties.put("name", objNameD);
+		
+		// Check whether the findObjectsByPropertiesForUpdate function returns a list with only objD in it
+		List<DBObject> res = db.getDatabase().findObjectsByPropertiesForUpdate(DBObject.class, properties);
+		assertEquals(1, res.size());
+		assertEquals(objD, res.get(0));
+	}
+	
+	@Test
+	public void testFindObjectsByPropertiesForUpdate_multiple_results(){
+		DBObject objD = construct(objNameD);
+		DBObject objD2 = construct(objNameD);
+		
+		// Store objects and verify it succeeded
+		boolean result = db.getDatabase().addRecord(objD);
+		assertTrue(result);
+		result = db.getDatabase().addRecord(objD2);
+		assertTrue(result);
+		
+		// Create a map with the common name property of objD and objD2
+		Map<String,Object> properties = new HashMap<String,Object>();
+		properties.put("name", objNameD);
+		
+		// Check whether the findObjectsByPropertiesForUpdate function returns a list with only objD and objD2 in it
+		List<DBObject> res = db.getDatabase().findObjectsByPropertiesForUpdate(DBObject.class, properties);
+		assertEquals(2, res.size());
+		assertTrue(res.contains(objD));
+		assertTrue(res.contains(objD2));
+	}
 }
