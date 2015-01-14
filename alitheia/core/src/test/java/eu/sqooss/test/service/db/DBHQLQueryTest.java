@@ -48,7 +48,7 @@ public class DBHQLQueryTest {
 		DBObject obj = new DBObject("object");
 		db.addTestObject(obj);
 		
-		// Select a non-existant object
+		// Select a non-existent object
 		List<?> objs = db.getDatabase().doHQL("select o from DBObject o where o.name = 'unknown'");
 		assertThat(objs, is(empty()));
 	}
@@ -230,7 +230,6 @@ public class DBHQLQueryTest {
 		try {
 			// Start a new session to read the changes
 			db.getDatabase().startDBSession();
-			List<?> res = db.getDatabase().doHQL("from DBObject");
 			
 			assertThat(rows, equalTo(1));
 			assertThat(db.getTestObject(DBObject.class, objA.getId()).getName(), equalTo("changed"));
@@ -263,7 +262,6 @@ public class DBHQLQueryTest {
 		try {
 			// Start a new session to read the changes
 			db.getDatabase().startDBSession();
-			List<?> res = db.getDatabase().doHQL("from DBObject");
 			
 			assertThat(rows, equalTo(3));
 			assertThat(db.getTestObject(DBObject.class, objA.getId()).getName(), equalTo("changed"));
