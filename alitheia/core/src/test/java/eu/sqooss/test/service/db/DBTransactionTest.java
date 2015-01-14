@@ -263,4 +263,59 @@ public class DBTransactionTest {
 		verify(t, never()).commit();
 	}
 	
+	@Test
+	public void testFlushDBSession_withoutActiveSession() {
+		// Prepare session
+		SessionFactory s = mock(SessionFactory.class);
+		Session ss = mock(Session.class);
+		when(s.getCurrentSession()).thenReturn(ss);
+		
+		db.prepareForTest(s, true, l);
+		
+		boolean result = db.flushDBSession();
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	public void testFlushDBSession_flushException() {
+		// Prepare session
+		SessionFactory s = mock(SessionFactory.class);
+		Session ss = mock(Session.class);
+		when(s.getCurrentSession()).thenReturn(ss);
+		doThrow(new HibernateException("Failed to flush session")).when(ss).flush();
+		
+		// Prepare transaction
+		Transaction t = mock(Transaction.class);
+		when(ss.getTransaction()).thenReturn(t);
+		when(t.isActive()).thenReturn(true);
+		
+		db.prepareForTest(s, true, l);
+		
+		boolean result = db.flushDBSession();
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	public void testFlushDBSession_success() {
+		// Prepare session
+		SessionFactory s = mock(SessionFactory.class);
+		Session ss = mock(Session.class);
+		when(s.getCurrentSession()).thenReturn(ss);
+		
+		// Prepare transaction
+		Transaction t = mock(Transaction.class);
+		when(ss.getTransaction()).thenReturn(t);
+		when(t.isActive()).thenReturn(true);
+		
+		db.prepareForTest(s, true, l);
+		
+		boolean result = db.flushDBSession();
+		
+		assertTrue(result);
+		verify(ss).flush();
+		verify(ss).clear();
+	}
+	
 }
