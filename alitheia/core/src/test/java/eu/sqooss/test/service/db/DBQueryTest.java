@@ -3,6 +3,7 @@ package eu.sqooss.test.service.db;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -69,6 +70,20 @@ public class DBQueryTest {
 	}
 	
 	@Test
+	public void testAddRecord_no_active_session() {
+		DBObject obj = construct(objNameA);
+		
+		// Make sure there is no active transaction
+		closeTransaction(); 
+
+		// Store the object and assert that it succeeded
+		boolean result = db.getDatabase().addRecord(obj);
+		assertFalse(result);
+		
+		beginTransaction(); //necessary for closeTransaction() to succeed
+	}
+	
+	@Test
 	public void testAddRecord_multiple() {
 		DBObject objA = construct(objNameA);
 		DBObject objB = construct(objNameB);
@@ -86,6 +101,77 @@ public class DBQueryTest {
 		DBObject storedObjA = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, objA.getId());
 		DBObject storedObjB = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, objB.getId());
 		assertEquals(objA, storedObjA);
+		assertEquals(objB, storedObjB);
+	}
+	
+	@Test
+	public void testDeleteRecord() {
+		DBObject obj = construct(objNameA);
+
+		// Store the object and assert that it succeeded
+		boolean result = db.getDatabase().addRecord(obj);
+		assertTrue(result);
+
+		// Retrieve the object
+		DBObject storedObj = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, obj.getId());
+		assertEquals(obj, storedObj);
+		
+		// Delete the record
+		result = db.getDatabase().deleteRecord(obj);
+		assertTrue(result);
+		
+		// Check whether it is actually deleted
+		storedObj = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, obj.getId());
+		assertNull(storedObj);
+	}
+	
+	@Test
+	public void testDeleteRecord_no_active_session() {
+		DBObject obj = construct(objNameA);
+
+		// Store the object and assert that it succeeded
+		boolean result = db.getDatabase().addRecord(obj);
+		assertTrue(result);
+
+		// Retrieve the object
+		DBObject storedObj = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, obj.getId());
+		assertEquals(obj, storedObj);
+		
+		// Make sure there is no active transaction
+		closeTransaction(); 
+				
+		// Delete the record
+		result = db.getDatabase().deleteRecord(obj);
+		assertFalse(result);
+		
+		beginTransaction(); //necessary for closeTransaction() to succeed
+	}
+	
+	@Test
+	public void testDeleteRecord_multiple_adds_one_delete() {
+		DBObject objA = construct(objNameA);
+		DBObject objB = construct(objNameB);
+		
+		// Store both objects and assert that it succeeded
+		boolean result = db.getDatabase().addRecord(objA);
+		assertTrue(result);
+		result = db.getDatabase().addRecord(objB);
+		assertTrue(result);
+
+		// Attempt to retrieve both objects
+		DBObject storedObjA = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, objA.getId());
+		DBObject storedObjB = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, objB.getId());
+		assertEquals(objA, storedObjA);
+		assertEquals(objB, storedObjB);
+		
+		// Delete the record for objA
+		result = db.getDatabase().deleteRecord(objA);
+		assertTrue(result);
+		
+		// Check whether only objA is deleted
+		storedObjA = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, objA.getId());
+		assertNull(storedObjA);
+		storedObjB = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, objB.getId());
 		assertEquals(objB, storedObjB);
 	}
 
