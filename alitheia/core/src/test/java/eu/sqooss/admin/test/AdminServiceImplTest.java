@@ -49,11 +49,7 @@ public class AdminServiceImplTest {
     @Test
     public void testRegisterAdminAction() {
         setUpRunTimeInfo();
-        assertEquals(1, impl.getAdminActions().size());
-
         setUpFailingAction();
-        assertEquals(2, impl.getAdminActions().size());
-
         setUpSucceedingAction();
         assertEquals(3, impl.getAdminActions().size());
     }
