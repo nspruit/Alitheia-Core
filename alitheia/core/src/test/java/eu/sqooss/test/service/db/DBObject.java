@@ -1,4 +1,4 @@
-package eu.sqooss.test.service.db.objects;
+package eu.sqooss.test.service.db;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

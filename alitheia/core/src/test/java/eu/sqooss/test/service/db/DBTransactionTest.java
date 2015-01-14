@@ -14,7 +14,6 @@ import org.mockito.Mockito;
 
 import eu.sqooss.impl.service.db.DBServiceImpl;
 import eu.sqooss.service.logging.Logger;
-import eu.sqooss.test.service.db.objects.DBObject;
 
 public class DBTransactionTest {
 

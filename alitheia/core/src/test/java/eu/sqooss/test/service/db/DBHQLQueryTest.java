@@ -16,8 +16,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import eu.sqooss.test.service.db.objects.DBObject;
-
 public class DBHQLQueryTest {
 
 	private static InMemoryDatabase db;

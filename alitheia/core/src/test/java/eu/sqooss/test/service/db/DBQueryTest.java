@@ -19,8 +19,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import eu.sqooss.test.service.db.objects.DBObject;
-
 public class DBQueryTest {
 
 	private static final String objNameA = "test-object-a";
