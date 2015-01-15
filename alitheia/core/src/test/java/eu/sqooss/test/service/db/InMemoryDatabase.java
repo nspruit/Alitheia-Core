@@ -7,7 +7,6 @@ import org.hibernate.cfg.AnnotationConfiguration;
 import org.mockito.Mockito;
 
 import eu.sqooss.impl.service.db.DBServiceImpl;
-import eu.sqooss.impl.service.db.DBSessionValidation;
 import eu.sqooss.impl.service.db.HQLQueryInterfaceImpl;
 import eu.sqooss.service.db.*;
 import eu.sqooss.service.logging.Logger;

@@ -10,6 +10,7 @@ import org.hibernate.SessionFactory;
 
 import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBSessionManager;
+import eu.sqooss.service.db.DBSessionValidation;
 import eu.sqooss.service.logging.Logger;
 
 public class DBSessionManagerImpl implements DBSessionManager, DBSessionValidation {

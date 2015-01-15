@@ -1,4 +1,4 @@
-package eu.sqooss.impl.service.db;
+package eu.sqooss.service.db;
 
 import java.sql.SQLException;
 

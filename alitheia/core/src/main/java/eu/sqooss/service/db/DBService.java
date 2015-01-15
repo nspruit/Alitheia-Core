@@ -106,7 +106,7 @@ public interface DBService extends AlitheiaCoreService {
      * as QueryInterface
      * @return an implementation of the QueryInterface interface
      */
-    public <T> T getQueryInterface(Class<T> queryInterfaceType);
+    public <T extends QueryInterface> T getQueryInterface(Class<T> queryInterfaceType);
 }
 
 // vi: ai nosi sw=4 ts=4 expandtab
