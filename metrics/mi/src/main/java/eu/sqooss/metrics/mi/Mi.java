@@ -99,7 +99,7 @@ public class Mi extends AbstractMetric {
     
     public void run(ProjectFile pf) throws AlreadyProcessingException {
         
-        pf = db.attachObjectToDBSession(pf);
+        pf = db.getSessionManager().attachObjectToDBSession(pf);
         
         /*MI works at the module level for src directories*/
         if (!pf.getIsDirectory())

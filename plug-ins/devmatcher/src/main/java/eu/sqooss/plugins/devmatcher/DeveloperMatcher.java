@@ -92,8 +92,8 @@ public class DeveloperMatcher implements MetadataUpdater {
 
     @Override
     public void update() throws Exception {
-        dbs.startDBSession();
-        project = dbs.attachObjectToDBSession(project);
+        dbs.getSessionManager().startDBSession();
+        project = dbs.getSessionManager().attachObjectToDBSession(project);
         DoubleMetaphone dm = new DoubleMetaphone();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("storedProject", project);
@@ -227,7 +227,7 @@ public class DeveloperMatcher implements MetadataUpdater {
         
         info("Matched " + matches.size() + " developers in " 
                 + (System.currentTimeMillis() - ts) + "ms");
-        dbs.commitDBSession();
+        dbs.getSessionManager().commitDBSession();
         progress = 100;
     }
     

@@ -62,9 +62,9 @@ public class JavaUpdaterJob extends Job {
 
     @Override
     protected void run() throws Exception {
-        db.startDBSession();
-        sp = db.attachObjectToDBSession(sp);
-        pv = db.attachObjectToDBSession(pv);
+        db.getSessionManager().startDBSession();
+        sp = db.getSessionManager().attachObjectToDBSession(sp);
+        pv = db.getSessionManager().attachObjectToDBSession(pv);
         Pattern p = Pattern.compile(".*\\.java$");
         FDSService fds = AlitheiaCore.getInstance().getFDSService();
 
@@ -152,7 +152,7 @@ public class JavaUpdaterJob extends Job {
                 }
             }
         }
-        db.commitDBSession();
+        db.getSessionManager().commitDBSession();
     }
     
     private List<String> getChangedMethods(EntityExtractor ee, ProjectFile pf, 

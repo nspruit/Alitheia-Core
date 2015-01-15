@@ -86,7 +86,7 @@ public class JavaMetrics extends AbstractMetric {
 
     public void run(ProjectVersion pv) throws Exception {
         db = AlitheiaCore.getInstance().getDBService();
-        pv = db.attachObjectToDBSession(pv);
+        pv = db.getSessionManager().attachObjectToDBSession(pv);
         this.pv = pv;
 
         Pattern p = Pattern.compile("([^\\s]+(\\.(?i)(java))$)");
@@ -107,18 +107,18 @@ public class JavaMetrics extends AbstractMetric {
         reducer = new ConcurrentHashMap<String, String>();
         for (ProjectFile pf : pv.getFiles(p))
         try {
-            if(!db.isDBSessionActive()) db.startDBSession();
+            if(!db.getSessionManager().isDBSessionActive()) db.getSessionManager().startDBSession();
             parseFile(pf);
         } catch (Exception e) {
 
         } finally {
-            if(db.isDBSessionActive()) db.commitDBSession();
+            if(db.getSessionManager().isDBSessionActive()) db.getSessionManager().commitDBSession();
         }
 
 
         List<EncapsulationUnit> changedClasses = new ArrayList<EncapsulationUnit>();
         for (ProjectFile pf : changedFiles) {
-            pf = db.attachObjectToDBSession(pf);
+            pf = db.getSessionManager().attachObjectToDBSession(pf);
             changedClasses.addAll(pf.getEncapsulationUnits());
         }
 
@@ -145,7 +145,7 @@ public class JavaMetrics extends AbstractMetric {
             db.addRecord(eum);
         }
 
-        db.commitDBSession();
+        db.getSessionManager().commitDBSession();
     }
 
     protected void parseFile(ProjectFile pf) throws Exception {

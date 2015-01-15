@@ -79,11 +79,11 @@ public class BugzillaXMLJob extends Job {
     @Override
     protected void run() throws Exception {
 
-        if (!dbs.isDBSessionActive())
-            dbs.startDBSession();
+        if (!dbs.getSessionManager().isDBSessionActive())
+            dbs.getSessionManager().startDBSession();
         BTSAccessor bts = AlitheiaCore.getInstance().getTDSService().getAccessor(
                 project.getId()).getBTSAccessor();
-        project = dbs.attachObjectToDBSession(project);
+        project = dbs.getSessionManager().attachObjectToDBSession(project);
 
         Bug bug = BTSEntryToBug(bts.getBug(bugID));
 
@@ -119,7 +119,7 @@ public class BugzillaXMLJob extends Job {
 
         dbs.addRecord(bug);
         logger.debug(project.getName() + ": Added bug " + bugID);
-        dbs.commitDBSession();
+        dbs.getSessionManager().commitDBSession();
         
     }
     

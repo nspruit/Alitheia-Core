@@ -177,7 +177,7 @@ public class Structural extends AbstractMetric {
             return;
         }
         
-        pf = db.attachObjectToDBSession(pf);
+        pf = db.getSessionManager().attachObjectToDBSession(pf);
         this.fileDAO.set(pf);
         
         FDSService fds = AlitheiaCore.getInstance().getFDSService();

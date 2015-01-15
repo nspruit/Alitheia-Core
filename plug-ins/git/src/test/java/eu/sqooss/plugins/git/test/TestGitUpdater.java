@@ -99,11 +99,11 @@ public class TestGitUpdater extends TestGitSetup {
         AlitheiaCore.testInstance();
         
         db = new DBServiceImpl(conProp, config.toURL() , l);
-        db.startDBSession();
+        db.getSessionManager().startDBSession();
         sp = new StoredProject();
         sp.setName(projectName);
         db.addRecord(sp);
-        db.commitDBSession();
+        db.getSessionManager().commitDBSession();
     }
     
     @Before
@@ -115,7 +115,7 @@ public class TestGitUpdater extends TestGitSetup {
     
     @Test
     public void testGetAuthor() {
-        db.startDBSession();
+        db.getSessionManager().startDBSession();
 
         //Test a properly formatted name
         Developer d = updater.getAuthor(sp, "Papa Smurf <pm@smurfvillage.com>");
@@ -159,7 +159,7 @@ public class TestGitUpdater extends TestGitSetup {
         assertNull(d.getName());
         assertEquals(1, d.getAliases().size());
        
-        db.rollbackDBSession();
+        db.getSessionManager().rollbackDBSession();
     }
    
     @Test
@@ -184,8 +184,8 @@ public class TestGitUpdater extends TestGitSetup {
             tw.addTree(commit.getTree());
             tw.setRecursive(true);
             
-            db.startDBSession();
-            sp = db.attachObjectToDBSession(sp);
+            db.getSessionManager().startDBSession();
+            sp = db.getSessionManager().attachObjectToDBSession(sp);
             ProjectVersion pv = ProjectVersion.getVersionByRevision(sp, from.getUniqueId());
             assertNotNull(pv);
             
@@ -216,7 +216,7 @@ public class TestGitUpdater extends TestGitSetup {
             	}
             }
             
-            db.commitDBSession();
+            db.getSessionManager().commitDBSession();
             tw.release();
             rw.release();
             from = to;

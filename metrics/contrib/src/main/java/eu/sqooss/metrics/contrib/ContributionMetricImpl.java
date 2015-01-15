@@ -72,11 +72,11 @@ import eu.sqooss.service.db.MailingList;
 import eu.sqooss.service.db.MailingListThread;
 import eu.sqooss.service.db.Metric;
 import eu.sqooss.service.db.MetricType;
+import eu.sqooss.service.db.MetricType.Type;
 import eu.sqooss.service.db.PluginConfiguration;
 import eu.sqooss.service.db.ProjectFile;
 import eu.sqooss.service.db.ProjectVersion;
 import eu.sqooss.service.db.StoredProject;
-import eu.sqooss.service.db.MetricType.Type;
 import eu.sqooss.service.fds.FileTypeMatcher;
 import eu.sqooss.service.metricactivator.MetricActivationException;
 import eu.sqooss.service.pa.PluginInfo;
@@ -553,7 +553,7 @@ public class ContributionMetricImpl extends AbstractMetric {
                 isPositive);
         
         if (at == null) {
-            db.rollbackDBSession();
+            db.getSessionManager().rollbackDBSession();
             return;
         }
 

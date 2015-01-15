@@ -97,7 +97,7 @@ public class MailDirUpdater implements MetadataUpdater {
         List<Long> listIds = Collections.emptyList();
         try {
             //Process mailing lists first
-            dbs.startDBSession();
+            dbs.getSessionManager().startDBSession();
             listIds = processMailingLists(mailAccessor);
             
             for (Long mlId : listIds) {
@@ -107,7 +107,7 @@ public class MailDirUpdater implements MetadataUpdater {
             }
             
             if (total == 0) {
-                dbs.commitDBSession();
+                dbs.getSessionManager().commitDBSession();
                 return;
             }
             

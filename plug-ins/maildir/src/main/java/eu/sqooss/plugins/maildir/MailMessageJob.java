@@ -81,9 +81,9 @@ public class MailMessageJob extends Job{
     protected void run() throws Exception {
         
         DBService dbs = AlitheiaCore.getInstance().getDBService();
-        dbs.startDBSession();
+        dbs.getSessionManager().startDBSession();
 
-        ml = dbs.attachObjectToDBSession(ml);
+        ml = dbs.getSessionManager().attachObjectToDBSession(ml);
         project = ml.getStoredProject();
         
         ProjectAccessor spAccessor = AlitheiaCore.getInstance().getTDSService().getAccessor(project.getId());
@@ -191,7 +191,7 @@ public class MailMessageJob extends Job{
             dbs.addRecord(mmsg);
             debug("Adding message " + mm.getMessageID());
 
-            if (dbs.commitDBSession()) {
+            if (dbs.getSessionManager().commitDBSession()) {
                 if (!mailAccessor.markMessageAsSeen(ml.getListId(),
                         fileName))
                     warn("Failed to mark message <" + fileName

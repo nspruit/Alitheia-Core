@@ -58,7 +58,7 @@ public class JavaUpdater implements MetadataUpdater, JobStateListener {
     }
 
     public void update() throws Exception {
-        db.startDBSession();
+        db.getSessionManager().startDBSession();
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("sp", sp);
@@ -87,7 +87,7 @@ public class JavaUpdater implements MetadataUpdater, JobStateListener {
             } catch(InterruptedException ignored){}
         }
         
-        if (db.isDBSessionActive())db.commitDBSession();
+        if (db.getSessionManager().isDBSessionActive())db.getSessionManager().commitDBSession();
     }
 
     public void jobStateChanged(Job j, State newState) {

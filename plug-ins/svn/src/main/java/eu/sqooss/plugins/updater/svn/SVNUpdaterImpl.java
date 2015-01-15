@@ -172,8 +172,8 @@ public class SVNUpdaterImpl implements MetadataUpdater {
     @Override
     public void update() throws Exception {
         
-        dbs.startDBSession();
-        project = dbs.attachObjectToDBSession(project);
+        dbs.getSessionManager().startDBSession();
+        project = dbs.getSessionManager().attachObjectToDBSession(project);
         
         init();
         
@@ -195,7 +195,7 @@ public class SVNUpdaterImpl implements MetadataUpdater {
                 if (r.compareTo(scm.newRevision(latestVersion.getRevisionId())) <= 0) {
                     info("Project is already at the newest version " 
                             + r.getUniqueId());
-                    dbs.commitDBSession();
+                    dbs.getSessionManager().commitDBSession();
                     return;    
                 }
             } else {
@@ -215,8 +215,8 @@ public class SVNUpdaterImpl implements MetadataUpdater {
                 root.setValidFrom(zero);
                 root.setValidUntil(zero);
                 dbs.addRecord(root);
-                dbs.commitDBSession();
-                dbs.startDBSession();
+                dbs.getSessionManager().commitDBSession();
+                dbs.getSessionManager().startDBSession();
                 latestVersion = ProjectVersion.getLastProjectVersion(project);
             }
             commitLog = scm.getCommitLog("", scm.getNextRevision(
@@ -274,8 +274,8 @@ public class SVNUpdaterImpl implements MetadataUpdater {
                 	} else {
                 		debug(msg + ". Removing");
                 		//dbs.deleteRecord(curVersion);
-                		dbs.rollbackDBSession();
-                        dbs.startDBSession();
+                		dbs.getSessionManager().rollbackDBSession();
+                        dbs.getSessionManager().startDBSession();
                         continue;
                 	}
                 }
@@ -290,12 +290,12 @@ public class SVNUpdaterImpl implements MetadataUpdater {
                 numRevisions++;
                 dirCache.clear();
 
-                if (!dbs.commitDBSession()) {
+                if (!dbs.getSessionManager().commitDBSession()) {
                     warn("Intermediate commit failed, failing update");
                     //restart();
                     return;
                 }
-                dbs.startDBSession();
+                dbs.getSessionManager().startDBSession();
                 progress = (float) (((double)numRevisions / (double)commitLog.size()) * 100);
             }
             info("Processed " + numRevisions + " revisions");
@@ -306,7 +306,7 @@ public class SVNUpdaterImpl implements MetadataUpdater {
             err("Not such repository revision:" + e.getMessage());
             throw e;
         } 
-        dbs.commitDBSession();
+        dbs.getSessionManager().commitDBSession();
     }
 
     private void init() {

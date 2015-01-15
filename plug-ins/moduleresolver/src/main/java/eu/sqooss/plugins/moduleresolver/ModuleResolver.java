@@ -45,7 +45,7 @@ public class ModuleResolver implements MetadataUpdater {
 
     @Override
     public void update() throws Exception {
-        db.startDBSession();
+        db.getSessionManager().startDBSession();
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("sp", sp);
@@ -59,8 +59,8 @@ public class ModuleResolver implements MetadataUpdater {
         int i = 0;
         for (ProjectVersion pv : toProcess) {
             i ++;
-            if (!db.isDBSessionActive()) db.startDBSession();
-            pv = db.attachObjectToDBSession(pv);
+            if (!db.getSessionManager().isDBSessionActive()) db.getSessionManager().startDBSession();
+            pv = db.getSessionManager().attachObjectToDBSession(pv);
             log.info("ModuleResolver: Processing version: " + pv);
             for (ProjectFile pf : pv.allDirs()) {
 
@@ -82,7 +82,7 @@ public class ModuleResolver implements MetadataUpdater {
                     pf.setModule(false);
             }
             progress = ((float)i / (float)toProcess.size());
-            db.commitDBSession();
+            db.getSessionManager().commitDBSession();
         }
     }
 
