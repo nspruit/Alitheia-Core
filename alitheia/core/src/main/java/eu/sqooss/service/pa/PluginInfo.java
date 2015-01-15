@@ -301,7 +301,7 @@ public class PluginInfo implements Comparable<PluginInfo> {
                 }
 
                 // Update the given configuration property
-                pc = db.attachObjectToDBSession(pc);
+                pc = db.getSessionManager().attachObjectToDBSession(pc);
                 pc.setValue(newVal);
                 return true;
             }

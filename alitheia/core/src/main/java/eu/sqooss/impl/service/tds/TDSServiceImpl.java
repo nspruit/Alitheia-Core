@@ -146,13 +146,13 @@ public class TDSServiceImpl implements TDSService, AlitheiaCoreService {
         logger.info("TDS is now running the stuffer.");
         DBService db = AlitheiaCore.getInstance().getDBService();
         
-        if (db != null && db.startDBSession()) {
+        if (db != null && db.getSessionManager().startDBSession()) {
             
             for (StoredProject p : ClusterNode.thisNode().getProjects()) {
                 addAccessor(p.getId(), p.getName(), p.getBtsUrl(), 
                         p.getMailUrl(), p.getScmUrl());
             }
-            db.commitDBSession();
+            db.getSessionManager().commitDBSession();
         }
 
         logger.info("TDS Stuffer is finished.");

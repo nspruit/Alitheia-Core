@@ -65,11 +65,11 @@ public class ProjectDeleteJob extends Job {
     protected void run() throws Exception {
         DBService dbs = core.getDBService();
 
-        if (!dbs.isDBSessionActive()) {
-            dbs.startDBSession();
+        if (!dbs.getSessionManager().isDBSessionActive()) {
+            dbs.getSessionManager().startDBSession();
         }
 
-        sp = dbs.attachObjectToDBSession(sp);
+        sp = dbs.getSessionManager().attachObjectToDBSession(sp);
         // Delete any associated invocation rules first
         HashMap<String, Object> properties = new HashMap<String, Object>();
         properties.put("project", sp);
@@ -111,9 +111,9 @@ public class ProjectDeleteJob extends Job {
         success &= dbs.deleteRecord(sp);
 
         if (success) {
-            dbs.commitDBSession();
+            dbs.getSessionManager().commitDBSession();
         } else {
-            dbs.rollbackDBSession();
+            dbs.getSessionManager().rollbackDBSession();
         }
 
     }
