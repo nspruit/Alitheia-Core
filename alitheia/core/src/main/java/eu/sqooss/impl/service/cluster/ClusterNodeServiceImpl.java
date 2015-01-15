@@ -55,6 +55,7 @@ import eu.sqooss.service.cluster.ClusterNodeActionException;
 import eu.sqooss.service.cluster.ClusterNodeService;
 import eu.sqooss.service.db.ClusterNode;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.StoredProject;
 import eu.sqooss.service.logging.Logger;
 import eu.sqooss.service.updater.UpdaterService;
@@ -366,7 +367,7 @@ public class ClusterNodeServiceImpl extends HttpServlet implements ClusterNodeSe
              // Example: http://localhost:8088/clusternode?action=get_known_servers
              bcontent = new StringBuilder();
              dbs.getSessionManager().startDBSession();
-             List<ClusterNode> nodes = (List<ClusterNode>) dbs.doHQL("FROM ClusterNode",null);
+             List<ClusterNode> nodes = (List<ClusterNode>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL("FROM ClusterNode",null);
              if ((nodes!=null) &&  (nodes.size()>0) ){
                  bcontent.append("\n");
                  for (ClusterNode cn : nodes) {                

@@ -302,7 +302,7 @@ public class Metric extends DAObject {
 		params.put("project", p);
 		params.put("metric", this);
 		
-		if (dbs.doHQL(query.toString(), params, 1).size() >= 1)
+		if (dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query.toString(), params, 1).size() >= 1)
 			return true;
 		
 		return false;
@@ -365,7 +365,7 @@ public class Metric extends DAObject {
 	 */
 	public static List<Metric> getAllMetrics() {
 		DBService dbs = AlitheiaCore.getInstance().getDBService();
-		return (List<Metric>) dbs.doHQL("from Metric");
+		return (List<Metric>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL("from Metric");
 	}
 }
 

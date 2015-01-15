@@ -156,7 +156,7 @@ public class NameSpace extends DAObject {
         params.put("pv", pv);
         params.put("name", name);
         
-        List<NameSpace> ns = (List<NameSpace>) dbs.doHQL(nsByVersion, params);
+        List<NameSpace> ns = (List<NameSpace>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(nsByVersion, params);
         
         if (ns.isEmpty())
             return null;

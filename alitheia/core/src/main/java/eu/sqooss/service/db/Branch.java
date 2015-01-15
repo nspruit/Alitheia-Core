@@ -153,7 +153,7 @@ public class Branch extends DAObject {
 		params.put("name", name);
 		params.put("project", sp);
 		
-		List<Branch> branches = (List<Branch>)db.doHQL(qBranchByName, params);
+		List<Branch> branches = (List<Branch>)db.getQueryInterface(HQLQueryInterface.class).doHQL(qBranchByName, params);
 		if (branches.isEmpty()) {
 		    if (!create)
 		        return null;
@@ -173,7 +173,7 @@ public class Branch extends DAObject {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("project", sp);
 
-        List<Long> ids = (List<Long>) db.doHQL(qNextSequence, params);
+        List<Long> ids = (List<Long>) db.getQueryInterface(HQLQueryInterface.class).doHQL(qNextSequence, params);
         if (ids.isEmpty())
             return "1";
         else

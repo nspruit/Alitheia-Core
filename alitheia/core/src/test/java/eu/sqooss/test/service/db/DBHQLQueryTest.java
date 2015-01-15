@@ -47,7 +47,7 @@ public class DBHQLQueryTest {
 		db.addTestObject(obj);
 		
 		// Select a non-existent object
-		List<?> objs = db.getDatabase().doHQL("select o from DBObject o where o.name = 'unknown'");
+		List<?> objs = db.getHQLInterface().doHQL("select o from DBObject o where o.name = 'unknown'");
 		assertThat(objs, is(empty()));
 	}
 	
@@ -63,7 +63,7 @@ public class DBHQLQueryTest {
 		
 		// Select all objects with name "object"
 		@SuppressWarnings("unchecked")
-		List<DBObject> objs = (List<DBObject>) db.getDatabase().doHQL("select o from DBObject o where o.name = 'object'");
+		List<DBObject> objs = (List<DBObject>) db.getHQLInterface().doHQL("select o from DBObject o where o.name = 'object'");
 
 		assertThat(objs, containsInAnyOrder(objA, objB));
 	}
@@ -80,7 +80,7 @@ public class DBHQLQueryTest {
 		Map<String, Object> params = new HashMap<>();
 		params.put("nameparam", objB.getName());
 		@SuppressWarnings("unchecked")
-		List<DBObject> objs = (List<DBObject>) db.getDatabase().doHQL(
+		List<DBObject> objs = (List<DBObject>) db.getHQLInterface().doHQL(
 				"select o from DBObject o where o.name = :nameparam", params);
 		
 		assertThat(objs, contains(objB));
@@ -95,7 +95,7 @@ public class DBHQLQueryTest {
 		db.addTestObject(objB);
 		
 		// Execute query without specifying all parameters
-		db.getDatabase().doHQL("select o from DBObject o where o.name = :nameparam", new HashMap<String, Object>());
+		db.getHQLInterface().doHQL("select o from DBObject o where o.name = :nameparam", new HashMap<String, Object>());
 	}
 	
 	@Test
@@ -107,7 +107,7 @@ public class DBHQLQueryTest {
 		db.addTestObject(objB);
 		
 		// Select one object with name "object"
-		List<?> objs = db.getDatabase().doHQL(
+		List<?> objs = db.getHQLInterface().doHQL(
 				"select o from DBObject o where o.name = 'object'", new HashMap<String, Object>(), 0);
 
 		assertThat(objs, is(empty()));
@@ -123,7 +123,7 @@ public class DBHQLQueryTest {
 		
 		// Select one object with name "object"
 		@SuppressWarnings("unchecked")
-		List<DBObject> objs = (List<DBObject>) db.getDatabase().doHQL(
+		List<DBObject> objs = (List<DBObject>) db.getHQLInterface().doHQL(
 				"select o from DBObject o where o.name = 'object'", new HashMap<String, Object>(), 1);
 
 		assertThat(objs, hasSize(1));
@@ -140,7 +140,7 @@ public class DBHQLQueryTest {
 		
 		// Select one object with name "object"
 		@SuppressWarnings("unchecked")
-		List<DBObject> objs = (List<DBObject>) db.getDatabase().doHQL(
+		List<DBObject> objs = (List<DBObject>) db.getHQLInterface().doHQL(
 				"select o from DBObject o where o.name = 'object'", new HashMap<String, Object>(), 3);
 
 		assertThat(objs, containsInAnyOrder(objA, objB));
@@ -156,7 +156,7 @@ public class DBHQLQueryTest {
 		
 		// Select one object with name "object"
 		@SuppressWarnings("unchecked")
-		List<DBObject> objs = (List<DBObject>) db.getDatabase().doHQL(
+		List<DBObject> objs = (List<DBObject>) db.getHQLInterface().doHQL(
 				"select o from DBObject o where o.name = 'object'", new HashMap<String, Object>(), -1);
 
 		assertThat(objs, containsInAnyOrder(objA, objB));
@@ -177,7 +177,7 @@ public class DBHQLQueryTest {
 		Map<String, Collection> params = new HashMap<>();
 		params.put("namelist", Arrays.asList(objA.getName(), objB.getName()));
 		@SuppressWarnings("unchecked")
-		List<DBObject> objs = (List<DBObject>) db.getDatabase().doHQL(
+		List<DBObject> objs = (List<DBObject>) db.getHQLInterface().doHQL(
 				"select o from DBObject o where o.name in (:namelist)", new HashMap<String, Object>(), params);
 		
 		assertThat(objs, containsInAnyOrder(objA, objB));
@@ -195,7 +195,7 @@ public class DBHQLQueryTest {
 		db.addTestObject(objC);
 		
 		// Select second object using a parameter
-		db.getDatabase().doHQL("select o from DBObject o where o.name in (:namelist)",
+		db.getHQLInterface().doHQL("select o from DBObject o where o.name in (:namelist)",
 				new HashMap<String, Object>(), new HashMap<String, Collection>());
 	}
 	

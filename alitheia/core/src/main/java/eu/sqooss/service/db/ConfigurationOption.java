@@ -149,7 +149,7 @@ public class ConfigurationOption extends DAObject {
 		params.put(paramConfOpt, this);
 
 		List<StoredProjectConfig> curValues = 
-			(List<StoredProjectConfig>) dbs.doHQL(query.toString(),params);
+			(List<StoredProjectConfig>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query.toString(),params);
 		boolean found = false;
 		if (overwrite) {
 			dbs.deleteRecords(curValues);
@@ -197,7 +197,7 @@ public class ConfigurationOption extends DAObject {
 		params.put(paramProject, sp);
 		params.put(paramConfOpt, this);
 		
-		return (List<String>) dbs.doHQL(query.toString(), params);
+		return (List<String>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query.toString(), params);
 	}
 	
 	public static ConfigurationOption fromKey(String key) {

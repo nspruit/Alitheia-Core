@@ -388,7 +388,7 @@ public class StoredProject extends DAObject {
      */
     public static int getProjectCount() {
         DBService dbs = AlitheiaCore.getInstance().getDBService();
-        List<?> l = dbs.doHQL("SELECT COUNT(*) FROM StoredProject");
+        List<?> l = dbs.getQueryInterface(HQLQueryInterface.class).doHQL("SELECT COUNT(*) FROM StoredProject");
         if ((l == null) || (l.size() < 1)) {
             return 0;
         }
@@ -408,7 +408,7 @@ public class StoredProject extends DAObject {
 
         Map<String,Object> parameterMap = new HashMap<String,Object>();
         parameterMap.put("pid", this.getId());
-        List<?> pvList = dbs.doHQL("select count(*)"
+        List<?> pvList = dbs.getQueryInterface(HQLQueryInterface.class).doHQL("select count(*)"
                 + " from ProjectVersion pv"
                 + " where pv.project.id=:pid",
                 parameterMap);
@@ -429,7 +429,7 @@ public class StoredProject extends DAObject {
 
         Map<String,Object> parameterMap = new HashMap<String,Object>();
         parameterMap.put("pid", this.getId());
-        List<?> res = dbs.doHQL("select count(*)"
+        List<?> res = dbs.getQueryInterface(HQLQueryInterface.class).doHQL("select count(*)"
                 + " from MailMessage mm, MailingList ml"
                 + " where ml.storedProject.id=:pid"
                 + " and mm.list.id=ml.id",
@@ -449,7 +449,7 @@ public class StoredProject extends DAObject {
 
         Map<String,Object> parameterMap = new HashMap<String,Object>();
         parameterMap.put("pid", this.getId());
-        List<?> res = dbs.doHQL("select count(*)"
+        List<?> res = dbs.getQueryInterface(HQLQueryInterface.class).doHQL("select count(*)"
                 + " from Bug bg"
                 + " where bg.project.id=:pid"
                 + " and bg.status.status='" + Status.NEW + "'",

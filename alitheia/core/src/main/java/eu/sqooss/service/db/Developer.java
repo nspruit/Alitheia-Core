@@ -250,7 +250,7 @@ public class Developer extends DAObject {
         parameterMap.put(paramEmail, email);
         parameterMap.put(paramProject, sp);
         
-        List<Developer> devs = (List<Developer>) dbs.doHQL(q.toString(), parameterMap);
+        List<Developer> devs = (List<Developer>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(q.toString(), parameterMap);
         
         /* Developer in the DB, return it */
         if ( !devs.isEmpty() )
@@ -365,7 +365,7 @@ public class Developer extends DAObject {
          * only work with certain databases (tested with mysql, postgres and 
          * derby).
          */
-        /*devs = (List<Developer>) dbs.doHQL("from Developer as foo where email like " +
+        /*devs = (List<Developer>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL("from Developer as foo where email like " +
         		"'%" +username+ "%' and storedProject.id=" + sp.getId() );
 
         for (Developer d : devs) {

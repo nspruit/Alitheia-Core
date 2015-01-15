@@ -48,6 +48,7 @@ import eu.sqooss.core.AlitheiaCore;
 import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.Directory;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.Metric;
 import eu.sqooss.service.db.ProjectFile;
 import eu.sqooss.service.db.ProjectVersion;
@@ -64,7 +65,7 @@ public class StoredProjectResource {
 	public List<StoredProject> getProjects() {
 		DBService db = AlitheiaCore.getInstance().getDBService();
 		String q = " from StoredProject";
-		List<StoredProject> sp = (List<StoredProject>) db.doHQL(q);
+		List<StoredProject> sp = (List<StoredProject>) db.getQueryInterface(HQLQueryInterface.class).doHQL(q);
 		return sp;
 	}
 

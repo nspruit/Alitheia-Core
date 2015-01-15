@@ -410,7 +410,7 @@ public class ProjectFile extends DAObject{
             parameters.put("paramCopyFromName", this.getCopyFrom().getName());
             parameters.put("paramCopyFromDir", this.getCopyFrom().getDir().getId());
         }
-        List<?> projectFiles = dbs.doHQL(query, parameters, 1);
+        List<?> projectFiles = dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, parameters, 1);
 
         if (projectFiles.size() == 0) {
             dbs.logger().warn("No previous versions for " + this +
@@ -481,7 +481,7 @@ public class ProjectFile extends DAObject{
         params.put(paramProject, pf.getProjectVersion().getProject());
         params.put(paramOrder, pf.getProjectVersion().getSequence());
 
-        List<ProjectVersion> pvs = (List<ProjectVersion>) db.doHQL(query, params);
+        List<ProjectVersion> pvs = (List<ProjectVersion>) db.getQueryInterface(HQLQueryInterface.class).doHQL(query, params);
                        
         if (pvs.size() <= 0)
             return null;
@@ -525,7 +525,7 @@ public class ProjectFile extends DAObject{
         params.put(paramIsDir, true);
         params.put(paramSequence, this.getProjectVersion().getSequence());
         
-        List<ProjectFile> pfs = (List<ProjectFile>) db.doHQL(query, params, 1);
+        List<ProjectFile> pfs = (List<ProjectFile>) db.getQueryInterface(HQLQueryInterface.class).doHQL(query, params, 1);
         
         if (pfs.size() <= 0)
             return null;
@@ -563,7 +563,7 @@ public class ProjectFile extends DAObject{
         parameters.put(paramDir, pf.getDir());
         parameters.put(paramProject, pf.getProjectVersion().getProject());
 
-        return (List<ProjectFile>) dbs.doHQL(query, parameters);
+        return (List<ProjectFile>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, parameters);
     }
     
     /**
@@ -634,7 +634,7 @@ public class ProjectFile extends DAObject{
         parameters.put(paramPath, path);
         parameters.put(paramVersion, version);
         
-        pfs = (List<ProjectFile>) dbs.doHQL(query.toString(), parameters, 1);
+        pfs = (List<ProjectFile>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query.toString(), parameters, 1);
         
         if (pfs.isEmpty()) 
             return null;
@@ -647,7 +647,7 @@ public class ProjectFile extends DAObject{
         Map<String, Object> params = new HashMap<String, Object>();
         
         params.put("file", this);
-        return (List<ExecutionUnit>)dbs.doHQL(qChangedMethods, params);
+        return (List<ExecutionUnit>)dbs.getQueryInterface(HQLQueryInterface.class).doHQL(qChangedMethods, params);
     }
     
     public String toString() {

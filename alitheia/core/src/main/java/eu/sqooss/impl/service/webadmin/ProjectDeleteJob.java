@@ -39,6 +39,7 @@ import java.util.List;
 import eu.sqooss.core.AlitheiaCore;
 import eu.sqooss.service.abstractmetric.AlitheiaPlugin;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.Plugin;
 import eu.sqooss.service.db.ProjectVersion;
 import eu.sqooss.service.db.StoredProject;
@@ -75,7 +76,7 @@ public class ProjectDeleteJob extends Job {
         properties.put("project", sp);
 
         //Cleanup plugin results
-        List<Plugin> ps = (List<Plugin>) dbs.doHQL("from Plugin");        
+        List<Plugin> ps = (List<Plugin>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL("from Plugin");        
         
         for (Plugin p : ps ) {
             AlitheiaPlugin ap = core.getPluginAdmin().getPlugin(core.getPluginAdmin().getPluginInfo(p.getHashcode()));

@@ -275,7 +275,7 @@ public class MailMessage extends DAObject {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(paramStoredProject, sp);
 
-        List<MailMessage> mm = (List<MailMessage>) dbs.doHQL(query, params, 1);
+        List<MailMessage> mm = (List<MailMessage>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, params, 1);
 
         if (!mm.isEmpty())
             return mm.get(0);

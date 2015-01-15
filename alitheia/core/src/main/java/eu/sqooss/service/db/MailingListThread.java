@@ -188,7 +188,7 @@ public class MailingListThread extends DAObject {
         Map<String,Object> params = new HashMap<String, Object>(1);
         params.put(paramThread, this);
         
-        List<MailMessage> mm = (List<MailMessage>) dbs.doHQL(query, params);
+        List<MailMessage> mm = (List<MailMessage>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, params);
         
         if (mm == null || mm.isEmpty())
             return Collections.emptyList();
@@ -212,7 +212,7 @@ public class MailingListThread extends DAObject {
         Map<String,Object> params = new HashMap<String, Object>(1);
         params.put(paramThread, this);
         
-        List<Integer> mm = (List<Integer>) dbs.doHQL(query, params, 1);
+        List<Integer> mm = (List<Integer>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, params, 1);
         
         if (mm == null || mm.isEmpty())
             return 0;
@@ -243,7 +243,7 @@ public class MailingListThread extends DAObject {
         params.put(paramThread, this);
         params.put(paramDepth, level);
         
-        List<MailMessage> mm = (List<MailMessage>) dbs.doHQL(query, params);
+        List<MailMessage> mm = (List<MailMessage>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, params);
         
         if (mm == null || mm.isEmpty())
             return Collections.emptyList();

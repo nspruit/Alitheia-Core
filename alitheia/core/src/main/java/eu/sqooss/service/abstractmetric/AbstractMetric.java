@@ -60,6 +60,7 @@ import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.EncapsulationUnitMeasurement;
 import eu.sqooss.service.db.ExecutionUnitMeasurement;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.MailMessageMeasurement;
 import eu.sqooss.service.db.MailingListThreadMeasurement;
 import eu.sqooss.service.db.Metric;
@@ -561,7 +562,7 @@ public abstract class AbstractMetric implements AlitheiaPlugin {
         Map<String,Object> params = new HashMap<String,Object>();
         params.put("plugin", Plugin.getPluginByHashcode(getUniqueKey()));
         
-        return (List<Metric>)db.doHQL(qry, params);
+        return (List<Metric>)db.getQueryInterface(HQLQueryInterface.class).doHQL(qry, params);
     }
     
     /** {@inheritDoc} */
@@ -929,7 +930,7 @@ public abstract class AbstractMetric implements AlitheiaPlugin {
 	    		throw new MetricActivationException("Metric synchronisation with GENERIC objects not implemented");
 	    	}
 	    	
-	    	List<Long> objectIds = (List<Long>) db.doHQL(q, params);
+	    	List<Long> objectIds = (List<Long>) db.getQueryInterface(HQLQueryInterface.class).doHQL(q, params);
 	    	TreeSet<Long> ids = new TreeSet<Long>();
 	    	ids.addAll(objectIds);
 	    	IDs.put(MetricType.fromActivator(at), ids);

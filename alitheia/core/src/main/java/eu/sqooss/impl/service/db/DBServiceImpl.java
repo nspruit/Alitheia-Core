@@ -66,6 +66,8 @@ import eu.sqooss.core.AlitheiaCoreService;
 import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.DBSessionManager;
+import eu.sqooss.service.db.HQLQueryInterface;
+import eu.sqooss.service.db.QueryInterface;
 import eu.sqooss.service.logging.Logger;
 import eu.sqooss.service.util.URIUtills;
 
@@ -349,7 +351,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
         }
         try {
             // We use "foo" as the name of the object
-            return (List<T>) doHQL( "from " + daoClass.getName() + " as foo " + whereClause, parameterMap, useLock );
+            return (List<T>) getQueryInterface(HQLQueryInterface.class).doHQL( "from " + daoClass.getName() + " as foo " + whereClause, parameterMap, useLock );
         } catch (QueryException e) {
             logger.warn("findObjectsByProperties(): invalid properties map. Restarting session...");
             // Automatically restart a session
@@ -439,93 +441,6 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 		}
 	}
     
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String)
-     */
-    public List<?> doHQL(String hql)
-        throws QueryException {
-        return doHQL(hql, null, null, false, -1, -1);
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map)
-     */
-    public List<?> doHQL(String hql, Map<String, Object> params) 
-        throws QueryException {
-        return doHQL(hql, params, null, false, -1, -1);
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map, int)
-     */
-    public List<?> doHQL(String hql, Map<String, Object> params, int limit) 
-        throws QueryException {
-        return doHQL(hql, params, null, false, 0, limit);
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map, boolean)
-     */
-    public List<?> doHQL(String hql, Map<String, Object> params, boolean lockForUpdate) 
-        throws QueryException {
-        return doHQL(hql, params, null, lockForUpdate, -1, -1);
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map, java.util.Map)
-     */
-    public List<?> doHQL(String hql, Map<String, Object> params,
-            Map<String, Collection> collectionParams) 
-        throws QueryException {
-        return doHQL(hql, params, collectionParams, false, -1, -1);
-    }
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map, java.util.Map, boolean, int, int)
-     */
-    public List<?> doHQL(String hql, Map<String, Object> params,
-            Map<String, Collection> collectionParams, boolean lockForUpdate, int start, int limit) 
-        throws QueryException {
-        if ( !checkSession() ) {
-            return Collections.emptyList();
-        }
-        try {
-            Session s = sessionFactory.getCurrentSession();
-            Query query = s.createQuery(hql);
-            if (params != null) {
-                for ( String param : params.keySet() ) {
-                    query.setParameter(param, params.get(param));
-                }
-            }
-            if (collectionParams != null) {
-                for ( String param : collectionParams.keySet() ) {
-                    query.setParameterList(param, collectionParams.get(param));
-                }
-            }
-            if (lockForUpdate) {
-                query.setLockMode("foo", LockMode.PESSIMISTIC_WRITE);
-            }
-            if ( start >= 0 && limit >= 0 ) {
-                query.setFirstResult(start);
-                query.setMaxResults(limit);
-            }
-            return query.list();
-        } catch ( QueryException e ) {
-            logExceptionAndTerminateSession(e);
-            throw e;
-        } catch( HibernateException e ) {
-            logExceptionAndTerminateSession(e);
-            return Collections.emptyList();
-        } catch (ClassCastException e) {
-            // Throw a QueryException instead of forwarding the ClassCastException
-            // it's more explicit
-            QueryException ebis = new QueryException("Invalid HQL query parameter type: "
-                                                    + e.getMessage(), e);
-            logExceptionAndTerminateSession(ebis);
-            throw ebis;
-        }
-        
-    }
-
     /* (non-Javadoc)
      * @see eu.sqooss.service.db.DBService#addRecord(eu.sqooss.service.db.DAObject)
      */
@@ -695,9 +610,11 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 		return sessionManager;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getQueryInterface(Class<T> queryInterfaceType) {
-		// TODO Auto-generated method stub
+		if (queryInterfaceType.isAssignableFrom(HQLQueryInterfaceImpl.class))
+			return (T)new HQLQueryInterfaceImpl(getSessionManager(), sessionFactory, logger);
 		return null;
 	}
 }
