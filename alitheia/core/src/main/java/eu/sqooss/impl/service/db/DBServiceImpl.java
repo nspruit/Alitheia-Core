@@ -518,39 +518,6 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
     public Logger logger() {
         return this.logger;
     } 
-    
-    public int executeUpdate(String hql, Map<String, Object> params) 
-    throws QueryException {
-        if (!checkSession()) {
-            return -1;
-        }
-        
-        try {
-            Session s = sessionFactory.getCurrentSession();
-            Query query = s.createQuery(hql);
-            if (params != null) {
-                for (String param : params.keySet()) {
-                    query.setParameter(param, params.get(param));
-                }
-            }
-            
-            return query.executeUpdate();
-            
-        } catch (QueryException e) {
-            logExceptionAndTerminateSession(e);
-            throw e;
-        } catch (HibernateException e) {
-            logExceptionAndTerminateSession(e);
-            return -1;
-        } catch (ClassCastException e) {
-            // Throw a QueryException instead of forwarding the ClassCastException
-            // it's more explicit
-            QueryException ebis = new QueryException(
-                    "Invalid HQL query parameter type: " + e.getMessage(), e);
-            logExceptionAndTerminateSession(ebis);
-            throw ebis;
-        }
-    }
 
     @Override
     public boolean startUp() {

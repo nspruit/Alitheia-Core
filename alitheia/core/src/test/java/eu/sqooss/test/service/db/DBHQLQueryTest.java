@@ -52,7 +52,7 @@ public class DBHQLQueryTest {
 	}
 	
 	@Test
-	public void testDoHql_selectMultipleObjects() {
+	public void testDoHQL_selectMultipleObjects() {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("object");
@@ -69,7 +69,7 @@ public class DBHQLQueryTest {
 	}
 	
 	@Test
-	public void testDoHql_withParameters() {
+	public void testDoHQL_withParameters() {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("other-object");
@@ -87,7 +87,7 @@ public class DBHQLQueryTest {
 	}
 	
 	@Test(expected = QueryException.class)
-	public void testDoHql_withMissingParameters() {
+	public void testDoHQL_withMissingParameters() {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("other-object");
@@ -99,7 +99,7 @@ public class DBHQLQueryTest {
 	}
 	
 	@Test
-	public void testDoHql_withZeroLimit() {
+	public void testDoHQL_withZeroLimit() {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("object");
@@ -114,7 +114,7 @@ public class DBHQLQueryTest {
 	}
 	
 	@Test
-	public void testDoHql_withSmallLimit() {
+	public void testDoHQL_withSmallLimit() {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("object");
@@ -131,7 +131,7 @@ public class DBHQLQueryTest {
 	}
 	
 	@Test
-	public void testDoHql_withLargeLimit() {
+	public void testDoHQL_withLargeLimit() {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("object");
@@ -147,7 +147,7 @@ public class DBHQLQueryTest {
 	}
 	
 	@Test
-	public void testDoHql_withNegativeLimit() {
+	public void testDoHQL_withNegativeLimit() {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("object");
@@ -163,7 +163,7 @@ public class DBHQLQueryTest {
 	}
 	
 	@Test
-	public void testDoHql_withCollectionParameters() {
+	public void testDoHQL_withCollectionParameters() {
 		// Insert test objects
 		DBObject objA = new DBObject("object-a");
 		DBObject objB = new DBObject("object-b");
@@ -185,7 +185,7 @@ public class DBHQLQueryTest {
 	
 	@SuppressWarnings("rawtypes")
 	@Test(expected = QueryException.class)
-	public void testDoHql_withMissingCollectionParameters() {
+	public void testDoHQL_withMissingCollectionParameters() {
 		// Insert test objects
 		DBObject objA = new DBObject("object-a");
 		DBObject objB = new DBObject("object-b");
@@ -206,7 +206,7 @@ public class DBHQLQueryTest {
 		db.addTestObject(objA);
 		
 		// Update the name of the test object
-		db.getDatabase().executeUpdate("update DBObject set object_name = :newname where object_id = :obj_id", null);
+		db.getHQLInterface().executeUpdate("update DBObject set object_name = :newname where object_id = :obj_id", null);
 	}
 	
 	@Test
@@ -221,7 +221,7 @@ public class DBHQLQueryTest {
 		Map<String, Object> params = new HashMap<>();
 		params.put("newname", "changed");
 		params.put("obj_id", objA.getId());
-		int rows = db.getDatabase().executeUpdate("update DBObject set name = :newname where id = :obj_id", params);
+		int rows = db.getHQLInterface().executeUpdate("update DBObject set name = :newname where id = :obj_id", params);
 		// Commit the change
 		db.getDatabase().getSessionManager().commitDBSession();
 		
@@ -235,7 +235,7 @@ public class DBHQLQueryTest {
 			throw e;
 		} finally {
 			db.getDatabase().getSessionManager().startDBSession();
-			db.getDatabase().executeUpdate("delete from DBObject", null);
+			db.getHQLInterface().executeUpdate("delete from DBObject", null);
 			db.getDatabase().getSessionManager().commitDBSession();
 		}
 	}
@@ -253,7 +253,7 @@ public class DBHQLQueryTest {
 		// Update the name of the test object
 		Map<String, Object> params = new HashMap<>();
 		params.put("newname", "changed");
-		int rows = db.getDatabase().executeUpdate("update DBObject set name = :newname", params);
+		int rows = db.getHQLInterface().executeUpdate("update DBObject set name = :newname", params);
 		// Commit the change
 		db.getDatabase().getSessionManager().commitDBSession();
 		
@@ -269,7 +269,7 @@ public class DBHQLQueryTest {
 			throw e;
 		} finally {
 			db.getDatabase().getSessionManager().startDBSession();
-			db.getDatabase().executeUpdate("delete from DBObject", null);
+			db.getHQLInterface().executeUpdate("delete from DBObject", null);
 			db.getDatabase().getSessionManager().commitDBSession();
 		}
 	}
