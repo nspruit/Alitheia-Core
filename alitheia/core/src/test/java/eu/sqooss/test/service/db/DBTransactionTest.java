@@ -32,7 +32,7 @@ public class DBTransactionTest {
 		SessionFactory s = mock(SessionFactory.class);
 		db.prepareForTest(s, false, l);
 		
-		boolean result = db.startDBSession();
+		boolean result = db.getSessionManager().startDBSession();
 		
 		assertFalse(result);
 		verifyNoMoreInteractions(s);
@@ -48,7 +48,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.startDBSession();
+		boolean result = db.getSessionManager().startDBSession();
 		
 		assertFalse(result);
 		verify(ss).beginTransaction();
@@ -63,7 +63,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.startDBSession();
+		boolean result = db.getSessionManager().startDBSession();
 		
 		assertTrue(result);
 		verify(ss).beginTransaction();
@@ -75,7 +75,7 @@ public class DBTransactionTest {
 		SessionFactory s = mock(SessionFactory.class);
 		db.prepareForTest(s, false, l);
 		
-		boolean result = db.isDBSessionActive();
+		boolean result = db.getSessionManager().isDBSessionActive();
 		
 		assertFalse(result);
 		verifyNoMoreInteractions(s);
@@ -90,7 +90,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.isDBSessionActive();
+		boolean result = db.getSessionManager().isDBSessionActive();
 		
 		assertFalse(result);
 	}
@@ -105,7 +105,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.isDBSessionActive();
+		boolean result = db.getSessionManager().isDBSessionActive();
 		
 		assertFalse(result);
 		verify(ss).close();
@@ -125,7 +125,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.isDBSessionActive();
+		boolean result = db.getSessionManager().isDBSessionActive();
 		
 		assertFalse(result);
 	}
@@ -144,7 +144,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.isDBSessionActive();
+		boolean result = db.getSessionManager().isDBSessionActive();
 		
 		assertTrue(result);
 	}
@@ -158,7 +158,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.commitDBSession();
+		boolean result = db.getSessionManager().commitDBSession();
 		
 		assertFalse(result);
 	}
@@ -178,7 +178,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.commitDBSession();
+		boolean result = db.getSessionManager().commitDBSession();
 		
 		assertFalse(result);
 		verify(t).commit();
@@ -199,7 +199,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.commitDBSession();
+		boolean result = db.getSessionManager().commitDBSession();
 		
 		assertTrue(result);
 		verify(t).commit();
@@ -216,7 +216,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.rollbackDBSession();
+		boolean result = db.getSessionManager().rollbackDBSession();
 		
 		assertFalse(result);
 	}
@@ -236,7 +236,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.rollbackDBSession();
+		boolean result = db.getSessionManager().rollbackDBSession();
 		
 		assertFalse(result);
 		verify(t).rollback();
@@ -257,7 +257,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.rollbackDBSession();
+		boolean result = db.getSessionManager().rollbackDBSession();
 		
 		assertTrue(result);
 		verify(t).rollback();
@@ -273,7 +273,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.flushDBSession();
+		boolean result = db.getSessionManager().flushDBSession();
 		
 		assertFalse(result);
 	}
@@ -293,7 +293,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.flushDBSession();
+		boolean result = db.getSessionManager().flushDBSession();
 		
 		assertFalse(result);
 	}
@@ -312,7 +312,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		boolean result = db.flushDBSession();
+		boolean result = db.getSessionManager().flushDBSession();
 		
 		assertTrue(result);
 		verify(ss).flush();
@@ -328,7 +328,7 @@ public class DBTransactionTest {
 		
 		db.prepareForTest(s, true, l);
 		
-		DBObject obj = db.attachObjectToDBSession(new DBObject("test-object"));
+		DBObject obj = db.getSessionManager().attachObjectToDBSession(new DBObject("test-object"));
 		
 		assertNull(obj);
 	}
@@ -351,7 +351,7 @@ public class DBTransactionTest {
 		DBObject merged = new DBObject("merged-object");
 		when(ss.contains(unbound)).thenReturn(false);
 		when(ss.merge(unbound)).thenReturn(merged);
-		DBObject obj = db.attachObjectToDBSession(unbound);
+		DBObject obj = db.getSessionManager().attachObjectToDBSession(unbound);
 		
 		assertEquals(merged, obj);
 		
@@ -374,7 +374,7 @@ public class DBTransactionTest {
 		
 		DBObject unbound = new DBObject("test-object");
 		when(ss.contains(unbound)).thenReturn(true);
-		DBObject obj = db.attachObjectToDBSession(unbound);
+		DBObject obj = db.getSessionManager().attachObjectToDBSession(unbound);
 		
 		assertSame(unbound, obj);
 		

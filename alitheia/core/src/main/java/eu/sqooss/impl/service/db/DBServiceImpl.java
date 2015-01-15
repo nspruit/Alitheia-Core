@@ -687,6 +687,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 		this.sessionFactory = s;
 		this.logger = l;
 		isInitialised.set(setInitialised);
+		this.sessionManager = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
 	}
 
 	@Override
