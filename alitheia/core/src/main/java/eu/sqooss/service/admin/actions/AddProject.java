@@ -12,6 +12,7 @@ import eu.sqooss.service.db.ClusterNode;
 import eu.sqooss.service.db.ConfigOption;
 import eu.sqooss.service.db.ConfigurationOption;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.QueryInterface;
 import eu.sqooss.service.db.StoredProject;
 import eu.sqooss.service.tds.BTSAccessor;
 import eu.sqooss.service.tds.InvalidAccessorException;
@@ -79,7 +80,7 @@ public class AddProject extends AdminActionBase {
     public void execute() throws Exception {
         super.execute();
         String name = null, bts = null, scm = null, mail = null, contact = null, web = null;
-        DBService db = AlitheiaCore.getInstance().getDBService();
+        QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         TDSService tds = AlitheiaCore.getInstance().getTDSService();
         
         if (args.containsKey("dir")) { 
@@ -122,7 +123,7 @@ public class AddProject extends AdminActionBase {
         // 1. Duplicate project
         HashMap<String, Object> props = new HashMap<String, Object>();
         props.put("name",  name);
-        if (!db.findObjectsByProperties(StoredProject.class, props).isEmpty()) {
+        if (!qi.findObjectsByProperties(StoredProject.class, props).isEmpty()) {
             error("project.exists", "A project with the same name already exists");
         }
 
@@ -179,7 +180,7 @@ public class AddProject extends AdminActionBase {
         
         StoredProject sp = new StoredProject(name);
         //The project is now ready to be added 
-        db.addRecord(sp);
+        qi.addRecord(sp);
         
         //Store all known properties to the database
         for (ConfigOption co : ConfigOption.values()) {

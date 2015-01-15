@@ -46,6 +46,7 @@ import java.util.TreeSet;
 import eu.sqooss.core.AlitheiaCore;
 import eu.sqooss.service.db.Bug;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.MailMessage;
 import eu.sqooss.service.db.MailingList;
 import eu.sqooss.service.db.ProjectVersion;
@@ -85,7 +86,7 @@ class TimelineImpl implements Timeline {
         params.put("paramFrom", begin);
         params.put("paramProject", project);
         
-        List<ProjectVersion> versions = (List<ProjectVersion>) dbs.doHQL(query.toString(), params);
+        List<ProjectVersion> versions = (List<ProjectVersion>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query.toString(), params);
         
         for(ProjectVersion version : versions) {
         	result.add( new RepositoryEvent(version.getTimestamp(), version) );
@@ -113,7 +114,7 @@ class TimelineImpl implements Timeline {
         if (lists != null) {
 			for (MailingList list : lists) {
 				params.put("paramList", list);
-				List<MailMessage> messages = (List<MailMessage>) dbs.doHQL(query.toString(), params);
+				List<MailMessage> messages = (List<MailMessage>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query.toString(), params);
 
 				for (MailMessage message : messages) {
 					result.add(new MailingListEvent(
@@ -141,7 +142,7 @@ class TimelineImpl implements Timeline {
         params.put("paramTo", end);
         params.put("paramFrom", begin);
         params.put("paramProject", project);
-        List<Bug> bugs = (List<Bug>) dbs.doHQL(query.toString(), params);
+        List<Bug> bugs = (List<Bug>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query.toString(), params);
         
         for (Bug bug : bugs) {
 			result.add(new BugDBEvent(bug.getCreationTS().getTime(), bug));

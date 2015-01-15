@@ -85,7 +85,7 @@ public class MetricActivatorJob extends Job {
     protected void run() throws Exception {
         dbs.getSessionManager().startDBSession();
         metric.setJob(this);
-        DAObject obj = dbs.findObjectById(daoType, daoID);
+        DAObject obj = dbs.getQueryInterface().findObjectById(daoType, daoID);
 
         try {
             if (fastSync) {

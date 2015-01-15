@@ -21,10 +21,12 @@ import eu.sqooss.test.service.db.InMemoryDatabase;
 public class ConfigurationOptionTest {
 
 	private static DBService db;
+	private static QueryInterface qi;
 	
 	@BeforeClass
 	public static void initializeDatabase() {
 		db = InMemoryDatabase.createDefault().getDatabase();
+		qi = db.getQueryInterface();
 		AlitheiaCore ac = mock(AlitheiaCore.class);
 		
 		when(ac.getDBService()).thenReturn(db);
@@ -51,10 +53,10 @@ public class ConfigurationOptionTest {
 	public void testGetValues_nonExistentProject() {
 		// Create test objects
 		ConfigurationOption opt = new ConfigurationOption("opt", "A sample option");
-		db.addRecord(opt);
+		qi.addRecord(opt);
 		
 		// Read the test object from the database, and look up its values
-		ConfigurationOption cfgOpt = db.findObjectById(ConfigurationOption.class, opt.getId());
+		ConfigurationOption cfgOpt = qi.findObjectById(ConfigurationOption.class, opt.getId());
 		List<String> values = cfgOpt.getValues(new StoredProject());
 		
 		assertThat(values, is(empty()));
@@ -65,14 +67,14 @@ public class ConfigurationOptionTest {
 		// Create test objects
 		ConfigurationOption opt = new ConfigurationOption("opt", "A sample option");
 		StoredProject sp = new StoredProject("sp1");
-		db.addRecord(opt);
-		db.addRecord(sp);
+		qi.addRecord(opt);
+		qi.addRecord(sp);
 		
 		// Add no values
 		opt.setValues(sp, Collections.<String> emptyList(), false);
 		
 		// Read the test object from the database, and look up its values
-		ConfigurationOption cfgOpt = db.findObjectById(ConfigurationOption.class, opt.getId());
+		ConfigurationOption cfgOpt = qi.findObjectById(ConfigurationOption.class, opt.getId());
 		List<String> values = cfgOpt.getValues(sp);
 		
 		assertThat(values, is(empty()));
@@ -83,15 +85,15 @@ public class ConfigurationOptionTest {
 		// Create test objects
 		ConfigurationOption opt = new ConfigurationOption("opt", "A sample option");
 		StoredProject sp = new StoredProject("sp1");
-		db.addRecord(opt);
-		db.addRecord(sp);
+		qi.addRecord(opt);
+		qi.addRecord(sp);
 		
 		// Add some values
 		List<String> values = Arrays.asList("valueA", "valueB");
 		opt.setValues(sp, values, false);
 		
 		// Read the test object from the database, and look up its values
-		ConfigurationOption cfgOpt = db.findObjectById(ConfigurationOption.class, opt.getId());
+		ConfigurationOption cfgOpt = qi.findObjectById(ConfigurationOption.class, opt.getId());
 		List<String> readValues = cfgOpt.getValues(sp);
 		
 		assertThat(readValues, containsInAnyOrder(values.toArray(new String[2])));
@@ -102,8 +104,8 @@ public class ConfigurationOptionTest {
 		// Create test objects
 		ConfigurationOption opt = new ConfigurationOption("opt", "A sample option");
 		StoredProject sp = new StoredProject("sp1");
-		db.addRecord(opt);
-		db.addRecord(sp);
+		qi.addRecord(opt);
+		qi.addRecord(sp);
 		
 		// Add some values
 		List<String> values = Arrays.asList("valueA", "valueB");
@@ -113,7 +115,7 @@ public class ConfigurationOptionTest {
 		opt.setValues(sp, moreValues, false);
 		
 		// Read the test object from the database, and look up its values
-		ConfigurationOption cfgOpt = db.findObjectById(ConfigurationOption.class, opt.getId());
+		ConfigurationOption cfgOpt = qi.findObjectById(ConfigurationOption.class, opt.getId());
 		List<String> readValues = cfgOpt.getValues(sp);
 		
 		assertThat(readValues, containsInAnyOrder("valueA", "valueB", "valueC", "valueD"));
@@ -124,8 +126,8 @@ public class ConfigurationOptionTest {
 		// Create test objects
 		ConfigurationOption opt = new ConfigurationOption("opt", "A sample option");
 		StoredProject sp = new StoredProject("sp1");
-		db.addRecord(opt);
-		db.addRecord(sp);
+		qi.addRecord(opt);
+		qi.addRecord(sp);
 		
 		// Add some values
 		List<String> values = Arrays.asList("valueA", "valueB", "valueD");
@@ -135,7 +137,7 @@ public class ConfigurationOptionTest {
 		opt.setValues(sp, moreValues, false);
 		
 		// Read the test object from the database, and look up its values
-		ConfigurationOption cfgOpt = db.findObjectById(ConfigurationOption.class, opt.getId());
+		ConfigurationOption cfgOpt = qi.findObjectById(ConfigurationOption.class, opt.getId());
 		List<String> readValues = cfgOpt.getValues(sp);
 		
 		assertThat(readValues, containsInAnyOrder("valueA", "valueB", "valueC", "valueD"));
@@ -147,9 +149,9 @@ public class ConfigurationOptionTest {
 		ConfigurationOption opt = new ConfigurationOption("opt", "A sample option");
 		StoredProject sp1 = new StoredProject("sp1");
 		StoredProject sp2 = new StoredProject("sp2");
-		db.addRecord(opt);
-		db.addRecord(sp1);
-		db.addRecord(sp2);
+		qi.addRecord(opt);
+		qi.addRecord(sp1);
+		qi.addRecord(sp2);
 		
 		// Add some values
 		List<String> values1 = Arrays.asList("valueA", "valueD");
@@ -158,7 +160,7 @@ public class ConfigurationOptionTest {
 		opt.setValues(sp2, values2, false);
 		
 		// Read the test object from the database, and look up its values
-		ConfigurationOption cfgOpt = db.findObjectById(ConfigurationOption.class, opt.getId());
+		ConfigurationOption cfgOpt = qi.findObjectById(ConfigurationOption.class, opt.getId());
 		List<String> readValues1 = cfgOpt.getValues(sp1);
 		List<String> readValues2 = cfgOpt.getValues(sp2);
 		
@@ -171,8 +173,8 @@ public class ConfigurationOptionTest {
 		// Create test objects
 		ConfigurationOption opt = new ConfigurationOption("opt", "A sample option");
 		StoredProject sp = new StoredProject("sp1");
-		db.addRecord(opt);
-		db.addRecord(sp);
+		qi.addRecord(opt);
+		qi.addRecord(sp);
 		
 		// Add some values
 		List<String> values = Arrays.asList("valueA", "valueB");
@@ -181,7 +183,7 @@ public class ConfigurationOptionTest {
 		opt.setValues(sp, Collections.<String>emptyList(), true);
 		
 		// Read the test object from the database, and look up its values
-		ConfigurationOption cfgOpt = db.findObjectById(ConfigurationOption.class, opt.getId());
+		ConfigurationOption cfgOpt = qi.findObjectById(ConfigurationOption.class, opt.getId());
 		List<String> readValues = cfgOpt.getValues(sp);
 		
 		assertThat(readValues, is(empty()));
@@ -192,8 +194,8 @@ public class ConfigurationOptionTest {
 		// Create test objects
 		ConfigurationOption opt = new ConfigurationOption("opt", "A sample option");
 		StoredProject sp = new StoredProject("sp1");
-		db.addRecord(opt);
-		db.addRecord(sp);
+		qi.addRecord(opt);
+		qi.addRecord(sp);
 		
 		// Add some values
 		List<String> values = Arrays.asList("valueA", "valueB", "valueC");
@@ -203,7 +205,7 @@ public class ConfigurationOptionTest {
 		opt.setValues(sp, newValues, true);
 		
 		// Read the test object from the database, and look up its values
-		ConfigurationOption cfgOpt = db.findObjectById(ConfigurationOption.class, opt.getId());
+		ConfigurationOption cfgOpt = qi.findObjectById(ConfigurationOption.class, opt.getId());
 		List<String> readValues = cfgOpt.getValues(sp);
 		
 		assertThat(readValues, containsInAnyOrder(newValues.toArray(new String[3])));
@@ -213,7 +215,7 @@ public class ConfigurationOptionTest {
 	public void testFromKey_notFound() {
 		// Create test object
 		ConfigurationOption opt = new ConfigurationOption("opt", "A sample option");
-		db.addRecord(opt);
+		qi.addRecord(opt);
 		
 		// Look up a non-existent key
 		ConfigurationOption found = ConfigurationOption.fromKey("unknown-opt");
@@ -225,7 +227,7 @@ public class ConfigurationOptionTest {
 	public void testFromKey_success() {
 		// Create test object
 		ConfigurationOption opt = new ConfigurationOption("opt", "A sample option");
-		db.addRecord(opt);
+		qi.addRecord(opt);
 		
 		// Look up a non-existent key
 		ConfigurationOption found = ConfigurationOption.fromKey("opt");

@@ -169,10 +169,10 @@ public class MetricType extends DAObject {
      * @return A MetricType DAO representing the metric type
      */
     public static MetricType getMetricType(Type t) {
-        DBService db = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         HashMap<String, Object> s = new HashMap<String, Object>();
         s.put("type", t.toString());
-        List<MetricType> result = db.findObjectsByProperties(MetricType.class, s);
+        List<MetricType> result = qi.findObjectsByProperties(MetricType.class, s);
         if (result.isEmpty()) {
             return null;
         }

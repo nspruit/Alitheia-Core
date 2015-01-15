@@ -60,6 +60,7 @@ import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.EncapsulationUnitMeasurement;
 import eu.sqooss.service.db.ExecutionUnitMeasurement;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.MailMessageMeasurement;
 import eu.sqooss.service.db.MailingListThreadMeasurement;
 import eu.sqooss.service.db.Metric;
@@ -70,6 +71,7 @@ import eu.sqooss.service.db.Plugin;
 import eu.sqooss.service.db.PluginConfiguration;
 import eu.sqooss.service.db.ProjectFileMeasurement;
 import eu.sqooss.service.db.ProjectVersionMeasurement;
+import eu.sqooss.service.db.QueryInterface;
 import eu.sqooss.service.db.StoredProject;
 import eu.sqooss.service.db.StoredProjectMeasurement;
 import eu.sqooss.service.db.MetricType.Type;
@@ -98,6 +100,7 @@ public abstract class AbstractMetric implements AlitheiaPlugin {
 
     /** Reference to the DB service, not to be passed to metric jobs */
     protected DBService db;
+    protected QueryInterface qi;
 
     /** 
      * Reference to the plugin administrator service, not to be passed to 
@@ -231,6 +234,8 @@ public abstract class AbstractMetric implements AlitheiaPlugin {
 
         if(db == null)
             log.error("Could not get a reference to the DB service");
+        else
+        	qi = db.getQueryInterface();
 
         pa = AlitheiaCore.getInstance().getPluginAdmin();
 
@@ -561,7 +566,7 @@ public abstract class AbstractMetric implements AlitheiaPlugin {
         Map<String,Object> params = new HashMap<String,Object>();
         params.put("plugin", Plugin.getPluginByHashcode(getUniqueKey()));
         
-        return (List<Metric>)db.doHQL(qry, params);
+        return (List<Metric>)db.getQueryInterface(HQLQueryInterface.class).doHQL(qry, params);
     }
     
     /** {@inheritDoc} */
@@ -598,7 +603,7 @@ public abstract class AbstractMetric implements AlitheiaPlugin {
         HashMap<String, Object> h = new HashMap<String, Object>();
         h.put("name", this.getName());
 
-        List<Plugin> plugins = db.findObjectsByProperties(Plugin.class, h);
+        List<Plugin> plugins = qi.findObjectsByProperties(Plugin.class, h);
 
         if (!plugins.isEmpty()) {
             log.warn("A plugin with name <" + getName()
@@ -614,7 +619,7 @@ public abstract class AbstractMetric implements AlitheiaPlugin {
         p.setVersion(getVersion());
         p.setActive(true);
         p.setHashcode(getUniqueKey());
-        boolean result =  db.addRecord(p);
+        boolean result =  qi.addRecord(p);
         
         //3. Add the metrics
         for (String mnem :metrics.keySet()) {
@@ -623,13 +628,13 @@ public abstract class AbstractMetric implements AlitheiaPlugin {
         	MetricType newType = MetricType.getMetricType(type);
         	if (newType == null) {
                 newType = new MetricType(type);
-                db.addRecord(newType);
+                qi.addRecord(newType);
                 m.setMetricType(newType);
             }
         	
         	m.setMetricType(newType);
         	m.setPlugin(p);
-        	db.addRecord(m);
+        	qi.addRecord(m);
         }
         
         return result;
@@ -642,7 +647,7 @@ public abstract class AbstractMetric implements AlitheiaPlugin {
      */
     public boolean remove() {
         Plugin p = Plugin.getPluginByHashcode(getUniqueKey());
-        return db.deleteRecord(p);
+        return qi.deleteRecord(p);
     }
     
     /**
@@ -844,12 +849,12 @@ public abstract class AbstractMetric implements AlitheiaPlugin {
      */
     protected List<Result> getResult(DAObject o, Class<? extends MetricMeasurement> clazz, 
             Metric m, Result.ResultType type) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+        //DBService dbs = AlitheiaCore.getInstance().getDBService();
         Map<String, Object> props = new HashMap<String, Object>();
         
         props.put(resultFieldNames.get(clazz), o);
         props.put("metric", m);
-        List resultat = dbs.findObjectsByProperties(clazz, props);
+        List resultat = qi.findObjectsByProperties(clazz, props);
         
         if (resultat.isEmpty())
             return Collections.EMPTY_LIST;
@@ -929,7 +934,7 @@ public abstract class AbstractMetric implements AlitheiaPlugin {
 	    		throw new MetricActivationException("Metric synchronisation with GENERIC objects not implemented");
 	    	}
 	    	
-	    	List<Long> objectIds = (List<Long>) db.doHQL(q, params);
+	    	List<Long> objectIds = (List<Long>) db.getQueryInterface(HQLQueryInterface.class).doHQL(q, params);
 	    	TreeSet<Long> ids = new TreeSet<Long>();
 	    	ids.addAll(objectIds);
 	    	IDs.put(MetricType.fromActivator(at), ids);

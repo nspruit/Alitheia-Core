@@ -109,11 +109,11 @@ public class ClusterNode extends DAObject {
     }
     
     public static ClusterNode getClusteNodeByName(String name) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         
         Map<String,Object> parameterMap = new HashMap<String,Object>();
         parameterMap.put("name",name);
-        List<ClusterNode> cnList = dbs.findObjectsByProperties(ClusterNode.class, parameterMap);
+        List<ClusterNode> cnList = qi.findObjectsByProperties(ClusterNode.class, parameterMap);
         return (cnList == null || cnList.isEmpty()) ? null : cnList.get(0);
     }
     

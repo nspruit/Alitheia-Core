@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.hibernate.QueryException;
 
-public interface HQLQueryInterface {
+public interface HQLQueryInterface extends QueryInterface {
 
 	/**
      * Execute a complete HQL query to the database.

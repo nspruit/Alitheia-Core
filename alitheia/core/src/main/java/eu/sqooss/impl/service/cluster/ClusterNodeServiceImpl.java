@@ -55,6 +55,7 @@ import eu.sqooss.service.cluster.ClusterNodeActionException;
 import eu.sqooss.service.cluster.ClusterNodeService;
 import eu.sqooss.service.db.ClusterNode;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.StoredProject;
 import eu.sqooss.service.logging.Logger;
 import eu.sqooss.service.updater.UpdaterService;
@@ -289,7 +290,7 @@ public class ClusterNodeServiceImpl extends HttpServlet implements ClusterNodeSe
             	    	 break;                   	 
                      }
                      dbs.getSessionManager().startDBSession();
-            		 project = dbs.findObjectById(StoredProject.class, id);
+            		 project = dbs.getQueryInterface().findObjectById(StoredProject.class, id);
             		 dbs.getSessionManager().rollbackDBSession();
             		 if (project==null) {
                	    	content = createXMLResponse(null,"Project with id:" + projectid + " not found", HttpServletResponse.SC_NOT_FOUND);
@@ -366,7 +367,7 @@ public class ClusterNodeServiceImpl extends HttpServlet implements ClusterNodeSe
              // Example: http://localhost:8088/clusternode?action=get_known_servers
              bcontent = new StringBuilder();
              dbs.getSessionManager().startDBSession();
-             List<ClusterNode> nodes = (List<ClusterNode>) dbs.doHQL("FROM ClusterNode",null);
+             List<ClusterNode> nodes = (List<ClusterNode>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL("FROM ClusterNode",null);
              if ((nodes!=null) &&  (nodes.size()>0) ){
                  bcontent.append("\n");
                  for (ClusterNode cn : nodes) {                
@@ -433,14 +434,14 @@ public class ClusterNodeServiceImpl extends HttpServlet implements ClusterNodeSe
 			// Check if previously registered in DB
 			Map<String, Object> serverProps = new HashMap<String, Object>(1);
 			serverProps.put("name", localServerName);
-			List<ClusterNode> s = dbs.findObjectsByProperties(
+			List<ClusterNode> s = dbs.getQueryInterface().findObjectsByProperties(
 					ClusterNode.class, serverProps);
 
 			if (s.isEmpty()) {
 				// not registered yet, create a record in DB
 				thisNode = new ClusterNode();
 				thisNode.setName(localServerName);
-				if (!dbs.addRecord(thisNode)) {
+				if (!dbs.getQueryInterface().addRecord(thisNode)) {
 					logger.error("Failed to register ClusterNode <"
 							+ localServerName + ">");
 					dbs.getSessionManager().rollbackDBSession();

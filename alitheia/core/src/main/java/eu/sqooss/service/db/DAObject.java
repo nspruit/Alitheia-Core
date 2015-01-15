@@ -64,8 +64,8 @@ public abstract class DAObject {
      * @return 
      */
     public static <T extends DAObject> T loadDAObyId(long id, Class<T> type) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
-        return dbs.findObjectById(type, id);
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
+        return qi.findObjectById(type, id);
     }
 }
 

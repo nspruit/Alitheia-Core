@@ -144,17 +144,17 @@ public class OhlohDeveloper extends DAObject {
     }
     
     public static List<OhlohDeveloper> getByUserName(String uname) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("uname", uname);
-        return dbs.findObjectsByProperties(OhlohDeveloper.class, params);
+        return qi.findObjectsByProperties(OhlohDeveloper.class, params);
     }
     
     private static OhlohDeveloper getBy(String name, String value) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(name, value);
-        List<OhlohDeveloper> l = dbs.findObjectsByProperties(OhlohDeveloper.class, params);
+        List<OhlohDeveloper> l = qi.findObjectsByProperties(OhlohDeveloper.class, params);
         
         if (!l.isEmpty())
             return l.get(0);

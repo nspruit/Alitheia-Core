@@ -163,12 +163,12 @@ public class BugResolution extends DAObject {
      * while modifying the DB.
      */
     public static BugResolution getBugResolution(String resolution, boolean create) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+        QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         
         Map<String,Object> params = new HashMap<String,Object>();
         params.put("resolution", resolution);
         
-        List<BugResolution> st = dbs.findObjectsByProperties(BugResolution.class,
+        List<BugResolution> st = qi.findObjectsByProperties(BugResolution.class,
                 params);
         
         if (!st.isEmpty()) {
@@ -186,7 +186,7 @@ public class BugResolution extends DAObject {
         BugResolution bs = new BugResolution();
         bs.setResolution(resolution);
         
-        if (!dbs.addRecord(bs))
+        if (!qi.addRecord(bs))
             return null;
         
         return bs;

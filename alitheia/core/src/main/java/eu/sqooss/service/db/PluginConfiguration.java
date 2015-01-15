@@ -126,11 +126,11 @@ public class PluginConfiguration extends DAObject {
      * Get a PluginConfiguration entry DAO or null in 
      */
     public static PluginConfiguration getConfigurationEntry(Plugin p, HashMap<String, Object> names) {
-        DBService db = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         
         names.put("plugin", p);
                 
-        List<PluginConfiguration> l = db.findObjectsByProperties(PluginConfiguration.class, names);
+        List<PluginConfiguration> l = qi.findObjectsByProperties(PluginConfiguration.class, names);
         
         if(l.isEmpty()) {
             return null;
@@ -145,7 +145,7 @@ public class PluginConfiguration extends DAObject {
      * fails, false will be returned.
      */
     public static boolean updConfigurationEntry(Plugin p, HashMap<String, Object> names) {
-        DBService db = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         PluginConfiguration pc = getConfigurationEntry(p, names);
         
         if (pc == null) {
@@ -156,7 +156,7 @@ public class PluginConfiguration extends DAObject {
         
         names.put("plugin", p);
         
-        List<PluginConfiguration> l = db.findObjectsByProperties(PluginConfiguration.class, s);
+        List<PluginConfiguration> l = qi.findObjectsByProperties(PluginConfiguration.class, s);
         
         if (l.isEmpty()) {
             return false;

@@ -29,12 +29,14 @@ import eu.sqooss.service.db.MetricType;
 import eu.sqooss.service.db.NameSpace;
 import eu.sqooss.service.db.NameSpaceMeasurement;
 import eu.sqooss.service.db.ProjectVersion;
+import eu.sqooss.service.db.QueryInterface;
 import eu.sqooss.service.db.StoredProject;
 import eu.sqooss.test.service.db.InMemoryDatabase;
 
 public class MetricTest {
 
 	private static DBService db;
+	private static QueryInterface qi;
 
 	private static final String metric_mnemonic = "test-metric";
 	private static final String test_project_name = "test-project";
@@ -44,6 +46,7 @@ public class MetricTest {
 	@BeforeClass
 	public static void initializeDatabase() {
 		db = InMemoryDatabase.createDefault().getDatabase();
+		qi = db.getQueryInterface();
 		AlitheiaCore ac = mock(AlitheiaCore.class);
 
 		when(ac.getDBService()).thenReturn(db);
@@ -86,12 +89,12 @@ public class MetricTest {
 		meas.setResult(test_measurement_result);
 		
 		// Add the objects to the database
-		db.addRecord(type);
-		db.addRecord(metr);
-		db.addRecord(project);
-		db.addRecord(version);
-		db.addRecord(namespace);
-		db.addRecord(meas);
+		qi.addRecord(type);
+		qi.addRecord(metr);
+		qi.addRecord(project);
+		qi.addRecord(version);
+		qi.addRecord(namespace);
+		qi.addRecord(meas);
 		
 		// Call the method and check its result
 		boolean result = metr.isEvaluated(project);
@@ -105,9 +108,9 @@ public class MetricTest {
 		type.setType(metric_type_string);
 		metr.setMetricType(type);
 		StoredProject project = new StoredProject(test_project_name);
-		db.addRecord(type);
-		db.addRecord(metr);
-		db.addRecord(project);
+		qi.addRecord(type);
+		qi.addRecord(metr);
+		qi.addRecord(project);
 		
 		boolean result = metr.isEvaluated(project);
 		assertFalse(result);
@@ -117,7 +120,7 @@ public class MetricTest {
 	public void testGetMetricByMnemonic_no_results(){
 		// Add the metric to the database
 		Metric obj = new Metric();
-		db.addRecord(obj);
+		qi.addRecord(obj);
 		
 		// Retrieve metric based on mnemonic and check properties
 		Metric result = Metric.getMetricByMnemonic(metric_mnemonic);
@@ -129,7 +132,7 @@ public class MetricTest {
 		// Add the metric to the database
 		Metric obj = new Metric();
 		obj.setMnemonic(metric_mnemonic);
-		db.addRecord(obj);
+		qi.addRecord(obj);
 		
 		// Retrieve metric based on mnemonic and check properties
 		Metric result = Metric.getMetricByMnemonic(metric_mnemonic);
@@ -146,8 +149,8 @@ public class MetricTest {
 		Metric obj2 = new Metric();
 		obj1.setMnemonic(metric_mnemonic);
 		obj2.setMnemonic(metric_mnemonic);
-		db.addRecord(obj1);
-		db.addRecord(obj2);
+		qi.addRecord(obj1);
+		qi.addRecord(obj2);
 		
 		// Retrieve metric based on mnemonic and check properties
 		Metric result = Metric.getMetricByMnemonic(metric_mnemonic);
@@ -167,7 +170,7 @@ public class MetricTest {
 	public void testGetAllMetrics_single_metric(){
 		// Add the metric to the database
 		Metric obj = new Metric();
-		db.addRecord(obj);
+		qi.addRecord(obj);
 		
 		// Retrieve all metrics and check properties
 		List<Metric> results = Metric.getAllMetrics();
@@ -181,8 +184,8 @@ public class MetricTest {
 		// Add the metrics to the database
 		Metric obj1 = new Metric();
 		Metric obj2 = new Metric();
-		db.addRecord(obj1);
-		db.addRecord(obj2);
+		qi.addRecord(obj1);
+		qi.addRecord(obj2);
 		
 		// Retrieve all metrics and check properties
 		List<Metric> results = Metric.getAllMetrics();
