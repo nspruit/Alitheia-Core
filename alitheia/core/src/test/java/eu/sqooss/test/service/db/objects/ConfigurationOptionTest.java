@@ -39,12 +39,12 @@ public class ConfigurationOptionTest {
 	
 	@Before
 	public void beginTransaction() {
-		db.startDBSession();
+		db.getSessionManager().startDBSession();
 	}
 	
 	@After
 	public void closeTransaction() {
-		db.rollbackDBSession();
+		db.getSessionManager().rollbackDBSession();
 	}
 	
 	@Test

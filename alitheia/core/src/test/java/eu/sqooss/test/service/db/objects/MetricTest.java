@@ -14,9 +14,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -60,12 +58,12 @@ public class MetricTest {
 
 	@Before
 	public void beginTransaction() {
-		db.startDBSession();
+		db.getSessionManager().startDBSession();
 	}
 
 	@After
 	public void closeTransaction() {
-		db.rollbackDBSession();
+		db.getSessionManager().rollbackDBSession();
 	}
 	
 	@Test
