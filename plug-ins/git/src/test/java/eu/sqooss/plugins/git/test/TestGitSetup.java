@@ -32,7 +32,7 @@ public class TestGitSetup {
     public static FileRepository local;
     public static SimpleDateFormat sdf;
     public static String url = "git://github.com/git/git.git";
-    public static String localrepo = "C:/Users/Niels/workspace/Alitheia-Core/plug-ins/git/test";
+    public static String localrepo = System.getProperty("user.dir") + "/test";
     
     public static GitAccessor git;
     
