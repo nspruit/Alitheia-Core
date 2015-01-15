@@ -37,8 +37,11 @@ import java.util.Set;
 
 import javax.mail.internet.MimeMessage;
 
+import org.hibernate.hql.ast.HqlASTFactory;
+
 import eu.sqooss.core.AlitheiaCore;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.MailMessage;
 import eu.sqooss.service.db.MailingList;
 import eu.sqooss.service.db.MailingListThread;
@@ -128,7 +131,7 @@ public class MailThreadResolver implements MetadataUpdater {
         Map<String,Object> params = new HashMap<String, Object>(1);
         params.put(paramMl, ml);
         
-        List<Long> mmList = (List<Long>) dbs.doHQL(query, params);
+        List<Long> mmList = (List<Long>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, params);
         
         if (mmList.isEmpty()) {
             info("No unprocessed mail messages found for list " + ml);
@@ -267,7 +270,7 @@ public class MailThreadResolver implements MetadataUpdater {
 
                 /* Create a new thread */
                 mlt = new MailingListThread(ml, mail.getSendDate());
-                dbs.addRecord(mlt);
+                dbs.getQueryInterface().addRecord(mlt);
                 mail.setThread(mlt);
                 mail.setDepth(0);
                 debug("Adding new thread " + mlt.getId());

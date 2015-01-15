@@ -206,7 +206,7 @@ public class SVNUpdaterImpl implements MetadataUpdater {
                 zero.setCommitMsg("Artificial revision to include / directory");
                 zero.setRevisionId("0");
                 zero.setSequence(0);
-                dbs.addRecord(zero);
+                dbs.getQueryInterface().addRecord(zero);
                 ProjectFile root = new ProjectFile(zero);
                 root.setIsDirectory(true);
                 root.setDir(getDirectory("/", true));
@@ -214,7 +214,7 @@ public class SVNUpdaterImpl implements MetadataUpdater {
                 root.setState(ProjectFileState.added());
                 root.setValidFrom(zero);
                 root.setValidUntil(zero);
-                dbs.addRecord(root);
+                dbs.getQueryInterface().addRecord(root);
                 dbs.getSessionManager().commitDBSession();
                 dbs.getSessionManager().startDBSession();
                 latestVersion = ProjectVersion.getLastProjectVersion(project);
@@ -283,7 +283,7 @@ public class SVNUpdaterImpl implements MetadataUpdater {
                 /*
                  * Add files to the database 
                  */
-                dbs.addRecords(versionFiles);
+                dbs.getQueryInterface().addRecords(versionFiles);
                
               	updateValidUntil(curVersion);
 
@@ -387,12 +387,12 @@ public class SVNUpdaterImpl implements MetadataUpdater {
 
         curVersion.setCommitMsg(commitMsg);
         curVersion.setSequence(Integer.MAX_VALUE);
-        dbs.addRecord(curVersion);
+        dbs.getQueryInterface().addRecord(curVersion);
 
         ProjectVersion prev = curVersion.getPreviousVersion();
         curVersion.setSequence(prev.getSequence() + 1);
         ProjectVersionParent pvp = new ProjectVersionParent(curVersion, prev);
-        dbs.addRecord(pvp);
+        dbs.getQueryInterface().addRecord(pvp);
         
         debug("Got version " + curVersion.getRevisionId() + 
                 " ID " + curVersion.getId());
@@ -424,13 +424,13 @@ public class SVNUpdaterImpl implements MetadataUpdater {
         		Branch b = new Branch(project, FileUtils.basename(copyOp.toPath()));
         		b.getBranchIncoming().add(prev);
         		b.getBranchOutgoing().add(curVersion);
-        		dbs.addRecord(b);
+        		dbs.getQueryInterface().addRecord(b);
         	}
         	
         	if (dirname.equals(tagsPath) || dirname.equals(tagsPath + "/")) {
         		Tag tag = new Tag(curVersion);
         		tag.setName(FileUtils.basename(copyOp.toPath()));
-        		dbs.addRecord(tag);
+        		dbs.getQueryInterface().addRecord(tag);
         	}
         }
         

@@ -145,7 +145,7 @@ public class MailDirUpdater implements MetadataUpdater {
                 MailingList nml = new MailingList();
                 nml.setListId(listId);
                 nml.setStoredProject(project);
-                dbs.addRecord(nml);
+                dbs.getQueryInterface().addRecord(nml);
             }
         }
         List<Long> listIds = new ArrayList<Long>();
@@ -161,7 +161,7 @@ public class MailDirUpdater implements MetadataUpdater {
     private List<MailingList> getMailingLists(StoredProject sp) {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("storedProject", sp);
-        return dbs.findObjectsByProperties(MailingList.class, params);
+        return dbs.getQueryInterface().findObjectsByProperties(MailingList.class, params);
     }
 
     @Override

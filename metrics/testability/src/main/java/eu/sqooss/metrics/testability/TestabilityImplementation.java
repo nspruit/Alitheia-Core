@@ -151,7 +151,7 @@ public class TestabilityImplementation extends AbstractMetric {
             Metric metric = Metric.getMetricByMnemonic(MNEMONIC_NCASES);
             ProjectFileMeasurement ncases = new ProjectFileMeasurement(
                     metric,pf,String.valueOf(numTestCases));
-            db.addRecord(ncases);
+            db.getQueryInterface().addRecord(ncases);
         } catch (IOException e) {
             log.error(this.getClass().getName() + " IO Error <" + e
                     + "> while measuring: " + pf.getFileName());

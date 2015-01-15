@@ -140,9 +140,9 @@ public class JavaMetrics extends AbstractMetric {
                     noc++;
 
             EncapsulationUnitMeasurement eum = new EncapsulationUnitMeasurement(clazz, DIT, String.valueOf(dit));
-            db.addRecord(eum);
+            db.getQueryInterface().addRecord(eum);
             eum = new EncapsulationUnitMeasurement(clazz, NOC, String.valueOf(dit));
-            db.addRecord(eum);
+            db.getQueryInterface().addRecord(eum);
         }
 
         db.getSessionManager().commitDBSession();
@@ -224,12 +224,12 @@ public class JavaMetrics extends AbstractMetric {
                 ExecutionUnitMeasurement eum = new ExecutionUnitMeasurement(
                         method, Metric.getMetricByMnemonic("MCCABE"),
                         res.toString());
-                db.addRecord(eum);
+                db.getQueryInterface().addRecord(eum);
             }
 
             EncapsulationUnitMeasurement eum =
                     new EncapsulationUnitMeasurement(clazz, m, wmc.toString());
-            db.addRecord(eum);
+            db.getQueryInterface().addRecord(eum);
         }
 
         // NUMM results
@@ -238,7 +238,7 @@ public class JavaMetrics extends AbstractMetric {
                     new EncapsulationUnitMeasurement(clazz,
                             Metric.getMetricByMnemonic("NUMM"),
                             clazz.getExecUnits().toString());
-            db.addRecord(eum);
+            db.getQueryInterface().addRecord(eum);
         }
     }
 
@@ -254,7 +254,7 @@ public class JavaMetrics extends AbstractMetric {
             }
 
             EncapsulationUnitMeasurement eum = new EncapsulationUnitMeasurement(clazz, m, res.toString());
-            db.addRecord(eum);
+            db.getQueryInterface().addRecord(eum);
         }
     }
 

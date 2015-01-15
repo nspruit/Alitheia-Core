@@ -49,6 +49,7 @@ import eu.sqooss.service.abstractmetric.MetricDecl;
 import eu.sqooss.service.abstractmetric.MetricDeclarations;
 import eu.sqooss.service.abstractmetric.Result;
 import eu.sqooss.service.db.Directory;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.Metric;
 import eu.sqooss.service.db.ProjectDirectory;
 import eu.sqooss.service.db.ProjectFile;
@@ -136,17 +137,17 @@ public class ModuleMetricsImplementation extends AbstractMetric {
             Metric m = Metric.getMetricByMnemonic(MET_ISSRCMOD);
 
             ProjectFileMeasurement pfm = new ProjectFileMeasurement(m, pf, String.valueOf(1));
-            db.addRecord(pfm);
+            db.getQueryInterface().addRecord(pfm);
             
             m = Metric.getMetricByMnemonic(MET_MNOL);
             pfm = new ProjectFileMeasurement(m, pf,
                     String.valueOf(mnol));
-            db.addRecord(pfm);
+            db.getQueryInterface().addRecord(pfm);
             
             m = Metric.getMetricByMnemonic(MET_MNOF);
             pfm = new ProjectFileMeasurement(m, pf,
                     String.valueOf(mnof));
-            db.addRecord(pfm);
+            db.getQueryInterface().addRecord(pfm);
 
         }
     }
@@ -198,7 +199,7 @@ public class ModuleMetricsImplementation extends AbstractMetric {
         
         // Get the list of folders which exist in this project version.
         List<ProjectFileMeasurement> srcDirs = 
-            (List<ProjectFileMeasurement>) db.doHQL(q.toString(), params);
+            (List<ProjectFileMeasurement>) db.getQueryInterface(HQLQueryInterface.class).doHQL(q.toString(), params);
 
         // Calculate the metric results
         int locs = 0;
@@ -219,7 +220,7 @@ public class ModuleMetricsImplementation extends AbstractMetric {
                     metric, pv, String.valueOf(0));
             
             ams.setResult(String.valueOf(((float) (locs / srcDirs.size()))));
-            db.addRecord(ams);
+            db.getQueryInterface().addRecord(ams);
         }
     }
     

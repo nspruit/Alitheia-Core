@@ -67,6 +67,7 @@ import eu.sqooss.service.db.BugResolution;
 import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.Developer;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.MailMessage;
 import eu.sqooss.service.db.MailingList;
 import eu.sqooss.service.db.MailingListThread;
@@ -121,7 +122,7 @@ public class ContributionMetricImpl extends AbstractMetric {
                            "ContribActionType"};
         
         for (String tablename : tables) {
-            result &= db.deleteRecords((List<DAObject>) db.doHQL(
+            result &= db.getQueryInterface().deleteRecords((List<DAObject>) db.getQueryInterface(HQLQueryInterface.class).doHQL(
                     "from " + tablename));
         }
         
@@ -160,10 +161,10 @@ public class ContributionMetricImpl extends AbstractMetric {
             params.put("changedResourceId", o.getId());
             params.put("actionCategory", ac.toString());
             List<ContribAction> pas = 
-                db.findObjectsByProperties(ContribAction.class, params);
+                db.getQueryInterface(HQLQueryInterface.class).findObjectsByProperties(ContribAction.class, params);
             if (!pas.isEmpty()) {
                 for (ContribAction pa : pas) {
-                    result &= db.deleteRecord(pa);
+                    result &= db.getQueryInterface().deleteRecord(pa);
                 }
             }
             params.clear();
@@ -179,19 +180,19 @@ public class ContributionMetricImpl extends AbstractMetric {
     	params.put("sp", sp);
     	
     	String qVersionIDs = "select pv.id from ProjectVersion pv where pv.id not in (select ca.changedResourceId from ContribAction ca where developer.storedProject =:sp and ca.contribActionType.actionCategory='C') and pv.project = :sp order by pv.sequence";
-    	List<Long> objectIds = (List<Long>) db.doHQL(qVersionIDs, params);
+    	List<Long> objectIds = (List<Long>) db.getQueryInterface(HQLQueryInterface.class).doHQL(qVersionIDs, params);
     	TreeSet<Long> ids = new TreeSet<Long>();
     	ids.addAll(objectIds);
     	IDs.put(MetricType.Type.PROJECT_VERSION, ids);
     	
     	String qThreadIDs = "select mlt.id from MailingListThread mlt where mlt.id not in (select ca.changedResourceId from ContribAction ca where developer.storedProject =:sp and ca.contribActionType.actionCategory='M') and mlt.list.storedProject = :sp order by mlt.lastUpdated";
-    	objectIds = (List<Long>) db.doHQL(qThreadIDs, params);
+    	objectIds = (List<Long>) db.getQueryInterface(HQLQueryInterface.class).doHQL(qThreadIDs, params);
     	ids = new TreeSet<Long>();
     	ids.addAll(objectIds);
     	IDs.put(MetricType.Type.MAILTHREAD, ids);
     	
     	String qBugIDs = "select b.id from Bug b where b.id not in (select ca.changedResourceId from ContribAction ca where developer.storedProject =:sp and ca.contribActionType.actionCategory='B') and b.project = :sp order by b.updateRun";
-    	objectIds = (List<Long>) db.doHQL(qBugIDs, params);
+    	objectIds = (List<Long>) db.getQueryInterface(HQLQueryInterface.class).doHQL(qBugIDs, params);
     	ids = new TreeSet<Long>();
     	ids.addAll(objectIds);
     	IDs.put(MetricType.Type.BUG, ids);
@@ -250,7 +251,7 @@ public class ContributionMetricImpl extends AbstractMetric {
             parameters.put(paramActionCategory, ActionCategory.B.toString());
         } 
 
-        List<ContribAction> lp = (List<ContribAction>) db.doHQL(query, parameters, 1);
+        List<ContribAction> lp = (List<ContribAction>) db.getQueryInterface(HQLQueryInterface.class).doHQL(query, parameters, 1);
     
         if (lp == null || lp.isEmpty()) {
             return null;
@@ -577,7 +578,7 @@ public class ContributionMetricImpl extends AbstractMetric {
             else
                 a.setChangedResourceTimestamp(null); //Make it fail
             
-            db.addRecord(a);
+            db.getQueryInterface().addRecord(a);
         } else {
             a.setTotal(a.getTotal() + value);
         }

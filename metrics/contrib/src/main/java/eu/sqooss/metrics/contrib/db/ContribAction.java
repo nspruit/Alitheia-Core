@@ -44,6 +44,7 @@ import eu.sqooss.core.AlitheiaCore;
 import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.Developer;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.StoredProject;
 
 public class ContribAction extends DAObject {
@@ -113,7 +114,7 @@ public class ContribAction extends DAObject {
         properties.put("changedResourceId", resourceId);
         properties.put("contribActionType", actionType);
         
-        List<ContribAction> pa = dbs.findObjectsByProperties(ContribAction.class, properties);
+        List<ContribAction> pa = dbs.getQueryInterface().findObjectsByProperties(ContribAction.class, properties);
         
         return pa.isEmpty() ? null : pa.get(0);
     }
@@ -138,7 +139,7 @@ public class ContribAction extends DAObject {
         params.put(paramContribActionType, actionType);
         
         
-        List<Long> result = (List<Long>) dbs.doHQL(q.toString(),params);
+        List<Long> result = (List<Long>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(q.toString(),params);
         
         if (!result.isEmpty()) {
             if (result.get(0) != null)
@@ -169,7 +170,7 @@ public class ContribAction extends DAObject {
         params.put(paramProject, sp);
         params.put(paramContribActionType, actionType);
         
-        List<Long> result = (List<Long>) dbs.doHQL(q.toString(),params);
+        List<Long> result = (List<Long>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(q.toString(),params);
         
         if (!result.isEmpty()) {
             if (result.get(0) != null)
@@ -187,7 +188,7 @@ public class ContribAction extends DAObject {
         
         String query = "select sum(total) from ContribAction" ;
         
-        List<?> totalActions = dbs.doHQL(query);
+        List<?> totalActions = dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query);
         
         if(totalActions == null || totalActions.size() == 0 ||
                 totalActions.get(0) == null) {
@@ -210,7 +211,7 @@ public class ContribAction extends DAObject {
         Map<String,Object> parameters = new HashMap<String,Object>();
         parameters.put(paramCategory, ac.toString());
         
-        List<?> totalActions = dbs.doHQL(query, parameters);
+        List<?> totalActions = dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, parameters);
         
         if(totalActions == null || totalActions.size() == 0 || 
                 totalActions.get(0) == null) {
@@ -234,7 +235,7 @@ public class ContribAction extends DAObject {
         Map<String,Object> parameters = new HashMap<String,Object>();
         parameters.put(paramType, actionType.toString());
         
-        List<?> totalActions = dbs.doHQL(query, parameters);
+        List<?> totalActions = dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, parameters);
         
         if(totalActions == null || totalActions.size() == 0 || 
                 totalActions.get(0) == null) {
@@ -261,7 +262,7 @@ public class ContribAction extends DAObject {
         parameters.put(paramType, actionType.toString());
         parameters.put(paramDeveloper, dev);
         
-        List<?> totalActions = dbs.doHQL(query, parameters);
+        List<?> totalActions = dbs.getQueryInterface(HQLQueryInterface.class).doHQL(query, parameters);
         
         if(totalActions == null || totalActions.size() == 0 || 
                 totalActions.get(0) == null) {

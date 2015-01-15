@@ -42,6 +42,7 @@ import eu.sqooss.metrics.contrib.ContributionActions.ActionCategory;
 import eu.sqooss.core.AlitheiaCore;
 import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.StoredProject;
 
 public class ContribActionType extends DAObject {
@@ -126,7 +127,7 @@ public class ContribActionType extends DAObject {
         params.put(paramBefore, before);
         //params.put(paramCat, ac);
         
-        return (List<ContribActionType>) dbs.doHQL(q.toString(),params);  
+        return (List<ContribActionType>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(q.toString(),params);  
     }
     
     public static ContribActionType getContribActionType(
@@ -138,7 +139,7 @@ public class ContribActionType extends DAObject {
         Map<String, Object> parameterMap = new HashMap<String, Object>();
         parameterMap.put("actionType", actionType.toString());
 
-        List<ContribActionType> atl = dbs.findObjectsByProperties(
+        List<ContribActionType> atl = dbs.getQueryInterface().findObjectsByProperties(
                 ContribActionType.class, parameterMap);
 
         if (!atl.isEmpty())
@@ -152,7 +153,7 @@ public class ContribActionType extends DAObject {
         at.setType(actionType);
         at.setIsPositive(isPositive);
 
-        if (!dbs.addRecord(at)) {
+        if (!dbs.getQueryInterface().addRecord(at)) {
             return null;
         }
         return at;

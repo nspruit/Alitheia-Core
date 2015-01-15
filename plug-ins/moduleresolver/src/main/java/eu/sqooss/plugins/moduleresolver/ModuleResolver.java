@@ -7,6 +7,7 @@ import java.util.Map;
 import eu.sqooss.core.AlitheiaCore;
 import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.Directory;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.ProjectFile;
 import eu.sqooss.service.db.ProjectVersion;
 import eu.sqooss.service.db.StoredProject;
@@ -49,7 +50,7 @@ public class ModuleResolver implements MetadataUpdater {
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("sp", sp);
-        List<ProjectVersion> toProcess = (List<ProjectVersion>) db.doHQL(notProcessed, params);
+        List<ProjectVersion> toProcess = (List<ProjectVersion>) db.getQueryInterface(HQLQueryInterface.class).doHQL(notProcessed, params);
 
         if (toProcess.size() == 0) {
             log.info("No versions to process");

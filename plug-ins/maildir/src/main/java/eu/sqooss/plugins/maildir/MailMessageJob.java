@@ -188,7 +188,7 @@ public class MailMessageJob extends Job{
 
             mmsg.setSubject(subject);
             mmsg.setFilename(fileName);
-            dbs.addRecord(mmsg);
+            dbs.getQueryInterface().addRecord(mmsg);
             debug("Adding message " + mm.getMessageID());
 
             if (dbs.getSessionManager().commitDBSession()) {

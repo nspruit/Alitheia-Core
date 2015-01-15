@@ -236,14 +236,14 @@ public class GitUpdater implements MetadataUpdater {
 
         pv.setCommitMsg(commitMsg);
         pv.setSequence(Integer.MAX_VALUE);
-        dbs.addRecord(pv);
+        dbs.getQueryInterface().addRecord(pv);
         
         //Tags
         String tag = git.allTags().get(entry.getUniqueId());
         if (tag != null) {
             Tag t = new Tag(pv);
             t.setName(tag);
-            dbs.addRecord(t);
+            dbs.getQueryInterface().addRecord(t);
             pv.getTags().add(t);
         }
         
@@ -263,7 +263,7 @@ public class GitUpdater implements MetadataUpdater {
             //Parent is a branch
             if (git.getCommitChidren(parentId).length > 1) {
                 Branch b = new Branch(project, Branch.suggestName(project));
-                dbs.addRecord(b);
+                dbs.getQueryInterface().addRecord(b);
                 parent.getOutgoingBranches().add(b);
                 pv.getIncomingBranches().add(b);
             } else {
@@ -279,7 +279,7 @@ public class GitUpdater implements MetadataUpdater {
             //New line of development
             if (entry.getParentIds().size() == 0) {
                 Branch b = new Branch(project, Branch.suggestName(project));
-                dbs.addRecord(b);
+                dbs.getQueryInterface().addRecord(b);
                 pv.getOutgoingBranches().add(b);
             } else {
                 pv.getOutgoingBranches().addAll(pv.getIncomingBranches());

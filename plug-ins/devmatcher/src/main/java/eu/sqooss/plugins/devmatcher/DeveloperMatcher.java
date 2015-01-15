@@ -41,6 +41,7 @@ import eu.sqooss.core.AlitheiaCore;
 import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.Developer;
 import eu.sqooss.service.db.DeveloperAlias;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.StoredProject;
 import eu.sqooss.service.logging.Logger;
 import eu.sqooss.service.updater.MetadataUpdater;
@@ -97,7 +98,7 @@ public class DeveloperMatcher implements MetadataUpdater {
         DoubleMetaphone dm = new DoubleMetaphone();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("storedProject", project);
-        List<Developer> devs = dbs.findObjectsByPropertiesForUpdate(Developer.class, params);
+        List<Developer> devs = dbs.getQueryInterface().findObjectsByPropertiesForUpdate(Developer.class, params);
         long ts = System.currentTimeMillis();
         //Fill in indices
         for (Developer d : devs) {
@@ -211,13 +212,13 @@ public class DeveloperMatcher implements MetadataUpdater {
             }
             
             for (String upd : updates) {
-                long lines = dbs.executeUpdate(upd, updParam);
+                long lines = dbs.getQueryInterface(HQLQueryInterface.class).executeUpdate(upd, updParam);
                 debug(upd + " old:" + byEmail + " new:" + 
                         byUsrName + " " + lines + " changed");
             }
             
             for (String del : deletes) {
-                long lines = dbs.executeUpdate(del, delParam);
+                long lines = dbs.getQueryInterface(HQLQueryInterface.class).executeUpdate(del, delParam);
                 debug(del + " old:" + byEmail.getId() + lines + " changed");
             }
 

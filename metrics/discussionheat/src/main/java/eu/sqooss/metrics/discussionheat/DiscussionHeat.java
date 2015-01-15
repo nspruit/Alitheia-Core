@@ -48,6 +48,7 @@ import eu.sqooss.service.abstractmetric.MetricDeclarations;
 import eu.sqooss.service.abstractmetric.MetricMismatchException;
 import eu.sqooss.service.abstractmetric.Result;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.MailMessage;
 import eu.sqooss.service.db.MailingListThread;
 import eu.sqooss.service.db.MailingListThreadMeasurement;
@@ -107,8 +108,8 @@ public class DiscussionHeat extends AbstractMetric {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("lst", m.getList());
         
-        List<Integer> thrDepths = (List<Integer>)db.doHQL(thrDepth, params);
-        List<Long> mailsPerList = (List<Long>)db.doHQL(numMails, params);
+        List<Integer> thrDepths = (List<Integer>)db.getQueryInterface(HQLQueryInterface.class).doHQL(thrDepth, params);
+        List<Long> mailsPerList = (List<Long>)db.getQueryInterface(HQLQueryInterface.class).doHQL(numMails, params);
         
         //Get one day's worth of messages
         List<MailMessage> msgs = m.getMessagesByArrivalOrder();
@@ -137,7 +138,7 @@ public class DiscussionHeat extends AbstractMetric {
         MailingListThreadMeasurement mm = new MailingListThreadMeasurement(
                 hotness, m, String.valueOf(score));
         
-        dbs.addRecord(mm);
+        dbs.getQueryInterface().addRecord(mm);
         
         if (score < 6)
             return;
@@ -155,7 +156,7 @@ public class DiscussionHeat extends AbstractMetric {
         MailingListThreadMeasurement mltm = new MailingListThreadMeasurement(
                 hoteffect, m, String.valueOf(result));
         
-        dbs.addRecord(mltm);
+        dbs.getQueryInterface().addRecord(mltm);
     }
     
     private int getLocsForVersions(List<ProjectVersion> versions) throws AlreadyProcessingException {
@@ -219,7 +220,7 @@ public class DiscussionHeat extends AbstractMetric {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("ts", ts.getTime());
         params.put("sp", sp);
-        List<ProjectVersion> vers = (List<ProjectVersion>) dbs.doHQL(getPVbyDate, params, 1);
+        List<ProjectVersion> vers = (List<ProjectVersion>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(getPVbyDate, params, 1);
         
         if (vers.size() > 0)
             return vers.get(0);
@@ -283,7 +284,7 @@ public class DiscussionHeat extends AbstractMetric {
         ProjectVersionMeasurement pvm = new ProjectVersionMeasurement(m, pv,
                 String.valueOf(linesChanged));
 
-        dbs.addRecord(pvm);
+        dbs.getQueryInterface().addRecord(pvm);
     }
     
     private int getLOCResult(ProjectFile pf, AlitheiaPlugin plugin, 

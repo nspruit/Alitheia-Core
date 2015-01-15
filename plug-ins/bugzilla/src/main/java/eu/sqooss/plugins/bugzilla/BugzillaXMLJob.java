@@ -117,7 +117,7 @@ public class BugzillaXMLJob extends Job {
             bug.setReportMessages(toadd);
         }
 
-        dbs.addRecord(bug);
+        dbs.getQueryInterface().addRecord(bug);
         logger.debug(project.getName() + ": Added bug " + bugID);
         dbs.getSessionManager().commitDBSession();
         
@@ -204,7 +204,7 @@ public class BugzillaXMLJob extends Job {
         params.put("project", sp);
         params.put("bugID", bugId);
         
-        List<Bug> buglist = dbs.findObjectsByProperties(Bug.class, params);
+        List<Bug> buglist = dbs.getQueryInterface().findObjectsByProperties(Bug.class, params);
         
         if (buglist.isEmpty())
             return false;

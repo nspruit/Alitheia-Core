@@ -102,7 +102,7 @@ public class TestGitUpdater extends TestGitSetup {
         db.getSessionManager().startDBSession();
         sp = new StoredProject();
         sp.setName(projectName);
-        db.addRecord(sp);
+        db.getQueryInterface().addRecord(sp);
         db.getSessionManager().commitDBSession();
     }
     

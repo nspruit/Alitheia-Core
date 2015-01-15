@@ -125,7 +125,7 @@ public class JavaUpdaterJob extends Job {
                 ns.setName(ee.getPackageName());
                 ns.setChangeVersion(pf.getProjectVersion());
                 ns.setLang(Language.JAVA);
-                db.addRecord(ns);
+                db.getQueryInterface().addRecord(ns);
             }
             
             for (String clazz : ee.getResults().keySet()) {
@@ -134,7 +134,7 @@ public class JavaUpdaterJob extends Job {
                 eu.setName(clazz);
                 eu.setNamespace(ns);
                 eu.setFile(pf);
-                db.addRecord(eu);
+                db.getQueryInterface().addRecord(eu);
 
                 for (CodeFragment fragment : ee.getResults().get(clazz)) {
                     ExecutionUnit exu = new ExecutionUnit(eu);
@@ -148,7 +148,7 @@ public class JavaUpdaterJob extends Job {
                                 pf.getProjectVersion().toString());
                         exu.setChanged(true);
                     }
-                    db.addRecord(exu);
+                    db.getQueryInterface().addRecord(exu);
                 }
             }
         }
