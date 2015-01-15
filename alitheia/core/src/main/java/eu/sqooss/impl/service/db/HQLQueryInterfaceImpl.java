@@ -25,9 +25,11 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
 
 	private SessionFactory sessionFactory;
 	private DBSessionManager sessionManager;
+	private DBSessionValidation sessionValidation;
 	private Logger logger;
 	
-	public HQLQueryInterfaceImpl(DBSessionManager sessionManager, SessionFactory sessionFactory, Logger logger) {
+	public HQLQueryInterfaceImpl(DBSessionManager sessionManager, DBSessionValidation sessionValidation,
+			SessionFactory sessionFactory, Logger logger) {
 		this.sessionManager = sessionManager;
 		this.sessionFactory = sessionFactory;
 		this.logger = logger;
@@ -43,14 +45,14 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
 
     @SuppressWarnings("unchecked")
     private <T extends DAObject> T doFindObjectById(Class<T> daoClass, long id, boolean useLock) {
-        if ( !checkSession() )
+        if ( !sessionValidation.checkSession() )
             return null;
         
         try {
             Session s = sessionFactory.getCurrentSession();
             return (T) (useLock ? s.get(daoClass, id, LockMode.UPGRADE) : s.get(daoClass, id));
         } catch (HibernateException e) {
-            logExceptionAndTerminateSession(e);
+        	sessionValidation.logExceptionAndTerminateSession(e);
             return null;
         }
     }
@@ -65,7 +67,7 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
 
     @SuppressWarnings("unchecked")
     private <T extends DAObject> List<T> doFindObjectsByProperties(Class<T> daoClass, Map<String,Object> properties, boolean useLock) {
-        if( !checkSession() )
+        if( !sessionValidation.checkSession() )
             return Collections.emptyList();
 
         // TODO maybe check that the properties are valid (e.g. with java.bean.PropertyDescriptor)
@@ -112,7 +114,7 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
      * @see eu.sqooss.service.db.DBService#addRecords(java.util.List)
      */
     public <T extends DAObject> boolean addRecords(List<T> records) {
-        if( !checkSession() )
+        if( !sessionValidation.checkSession() )
             return false;
 
         DAObject lastRecord = null;
@@ -131,7 +133,7 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
                         + "[" + lastRecord.getClass().getName() + ":" + lastRecord.getId() + "]"
                         + " to the database: " + e.getMessage());
             }
-            logExceptionAndTerminateSession(e);
+            sessionValidation.logExceptionAndTerminateSession(e);
             return false;
         }
     }
@@ -140,7 +142,7 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
      * @see eu.sqooss.service.db.DBService#deleteRecords(java.util.List)
      */
     public <T extends DAObject> boolean deleteRecords(List<T> records) {
-        if( !checkSession() )
+        if( !sessionValidation.checkSession() )
             return false;
 
         DAObject lastRecord = null;
@@ -159,7 +161,7 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
                         + "[" + lastRecord.getClass().getName() + ":" + lastRecord.getId() + "]"
                         + " from the database: " + e.getMessage());
             }
-            logExceptionAndTerminateSession(e);
+            sessionValidation.logExceptionAndTerminateSession(e);
             return false;
         }
     }
@@ -210,7 +212,7 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
     public List<?> doHQL(String hql, Map<String, Object> params,
             Map<String, Collection> collectionParams, boolean lockForUpdate, int start, int limit) 
         throws QueryException {
-        if ( !checkSession() ) {
+        if ( !sessionValidation.checkSession() ) {
             return Collections.emptyList();
         }
         try {
@@ -235,24 +237,24 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
             }
             return query.list();
         } catch ( QueryException e ) {
-            logExceptionAndTerminateSession(e);
+        	sessionValidation.logExceptionAndTerminateSession(e);
             throw e;
         } catch( HibernateException e ) {
-            logExceptionAndTerminateSession(e);
+        	sessionValidation.logExceptionAndTerminateSession(e);
             return Collections.emptyList();
         } catch (ClassCastException e) {
             // Throw a QueryException instead of forwarding the ClassCastException
             // it's more explicit
             QueryException ebis = new QueryException("Invalid HQL query parameter type: "
                                                     + e.getMessage(), e);
-            logExceptionAndTerminateSession(ebis);
+            sessionValidation.logExceptionAndTerminateSession(ebis);
             throw ebis;
         }
         
     }
     
     public int executeUpdate(String hql, Map<String, Object> params) throws QueryException {
-        if (!checkSession()) {
+        if (!sessionValidation.checkSession()) {
             return -1;
         }
         
@@ -268,68 +270,18 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
             return query.executeUpdate();
             
         } catch (QueryException e) {
-            logExceptionAndTerminateSession(e);
+        	sessionValidation.logExceptionAndTerminateSession(e);
             throw e;
         } catch (HibernateException e) {
-            logExceptionAndTerminateSession(e);
+        	sessionValidation.logExceptionAndTerminateSession(e);
             return -1;
         } catch (ClassCastException e) {
             // Throw a QueryException instead of forwarding the ClassCastException
             // it's more explicit
             QueryException ebis = new QueryException(
                     "Invalid HQL query parameter type: " + e.getMessage(), e);
-            logExceptionAndTerminateSession(ebis);
+            sessionValidation.logExceptionAndTerminateSession(ebis);
             throw ebis;
         }
     }
-    
-    // TODO: Find the correct place to put this
-    private void logSQLException(SQLException e) {
-
-        while (e != null) {
-            String message = String.format("SQLException: SQL State:%s, Error Code:%d, Message:%s",
-                    e.getSQLState(), e.getErrorCode(), e.getMessage());
-            logger.warn(message);
-            e = e.getNextException();
-        }
-    }
-    
-    // TODO: Find the correct place to put this
-    private void logExceptionAndTerminateSession( Exception e ) {
-        if ( e instanceof JDBCException ) {
-            JDBCException jdbce = (JDBCException) e;
-            logSQLException(jdbce.getSQLException());
-        }
-        logger.warn("Exception caught during database session: " + e.getMessage() 
-                + ". Rolling back current transaction and terminating session...");
-        e.printStackTrace();
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            s.getTransaction().rollback();
-        } catch (HibernateException e1) {
-            logger.error("Error while rolling back failed transaction :" + e1.getMessage());
-            if ( s != null ) {
-                try {
-                    s.close();
-                } catch ( HibernateException e2) {}
-            }
-        }
-        
-    }
-   
-    // TODO: Find the correct place to put this
-    private boolean checkSession() {
-        if ( !sessionManager.isDBSessionActive() ) {
-            logger.warn("Trying to call a DBService method without an active session");
-            try {
-                throw new Exception("No active session.");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return false;
-        }
-        return true;
-    }
-
 }
