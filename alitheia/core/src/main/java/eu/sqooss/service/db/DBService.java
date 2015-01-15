@@ -107,6 +107,15 @@ public interface DBService extends AlitheiaCoreService {
      * @return an implementation of the QueryInterface interface
      */
     public <T extends QueryInterface> T getQueryInterface(Class<T> queryInterfaceType);
+    
+    /**
+     * Registers a new QueryInterface by providing a factory that can construct
+     * an instance of that QueryInterface.
+     * @param queryInterfaceType the QueryInterface subtype to register
+     * @param factoryType the QueryInterfaceFactory capable of constructing the QueryInterface
+     */
+    public <T extends QueryInterface> void registerQueryInterface(Class<T> queryInterfaceType,
+    		Class<? extends QueryInterfaceFactory<? extends T>> factoryType);
 }
 
 // vi: ai nosi sw=4 ts=4 expandtab

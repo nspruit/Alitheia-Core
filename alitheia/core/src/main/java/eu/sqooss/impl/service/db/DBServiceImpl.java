@@ -125,16 +125,9 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
     private DBSessionManager sessionManager = null;
     private DBSessionValidation sessionValidation = null;
     
+    private Map<Class<? extends QueryInterface>, Class<? extends QueryInterfaceFactory<?>>>
+			queryInterfaceFactories = new HashMap<>();
     private Map<Class<? extends QueryInterface>, QueryInterface> queryInterfaces = new HashMap<>();
-    
-    public static Map<Class<? extends QueryInterface>, Class<? extends QueryInterfaceFactory<?>>>
-    		queryInterfaceFactories = new HashMap<>();
-    
-    static {
-    	queryInterfaceFactories.put(QueryInterface.class, HQLQueryInterfaceImpl.Factory.class);
-    	queryInterfaceFactories.put(HQLQueryInterface.class, HQLQueryInterfaceImpl.Factory.class);
-    	queryInterfaceFactories.put(SQLQueryInterface.class, SQLQueryInterfaceImpl.Factory.class);
-    }
     
     private boolean getJDBCConnection() {
         String driver = conProp.getProperty("hibernate.connection.driver_class");
@@ -251,12 +244,19 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
         return true;
     }
     
+    private void preloadFactories() {
+    	registerQueryInterface(QueryInterface.class, HQLQueryInterfaceImpl.Factory.class);
+    	registerQueryInterface(HQLQueryInterface.class, HQLQueryInterfaceImpl.Factory.class);
+    	registerQueryInterface(SQLQueryInterface.class, SQLQueryInterfaceImpl.Factory.class);
+    }
+    
     public DBServiceImpl() { }
     
     public DBServiceImpl(Properties p, URL configFileURL, Logger l) { 
         this.conProp = p;
         this.logger = l;
         initHibernate(configFileURL);
+        preloadFactories();
         isInitialised.compareAndSet(false, true);
         instance = this;
     }
@@ -345,6 +345,16 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 		return (T) queryInterfaces.get(queryInterfaceType);
 	}
 	
+	@Override
+	public <T extends QueryInterface> void registerQueryInterface(Class<T> queryInterfaceType,
+			Class<? extends QueryInterfaceFactory<? extends T>> factoryType) {
+		// Override any existing interface
+		if (queryInterfaces.containsKey(queryInterfaceType))
+			queryInterfaces.remove(queryInterfaceType);
+		
+		queryInterfaceFactories.put(queryInterfaceType, factoryType);
+	}
+	
 	/**
 	 * Prepare the DB service for testing by injecting a custom SessionFactory.
 	 * Note: this should NOT be used in production code.
@@ -360,6 +370,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 		DBSessionManagerImpl ssm = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
 		this.sessionManager = ssm;
 		this.sessionValidation = ssm;
+		preloadFactories();
 		
 		isInitialised.set(setInitialised);
 	}
