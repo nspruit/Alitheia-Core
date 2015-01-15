@@ -16,19 +16,19 @@ import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBSessionManager;
 import eu.sqooss.service.db.QueryInterface;
 import eu.sqooss.service.db.SQLQueryInterface;
-import eu.sqooss.service.logging.Logger;
 
 public class SQLQueryInterfaceImpl implements SQLQueryInterface {
 	
 	private QueryInterface qi;
 	private DBSessionManager sessionManager;
+	private DBSessionValidation sessionValidation;
 	private SessionFactory sessionFactory;
-	private Logger logger;
 	
-	public SQLQueryInterfaceImpl(DBSessionManager sesMan, SessionFactory sesFac, Logger log, QueryInterface qi){
+	public SQLQueryInterfaceImpl(DBSessionManager sesMan, DBSessionValidation sesVal,
+			SessionFactory sesFac, QueryInterface qi){
 		this.sessionManager = sesMan;
+		this.sessionValidation = sesVal;
 		this.sessionFactory = sesFac;
-		this.logger = log;
 		this.qi = qi;
 	}
 
@@ -60,50 +60,16 @@ public class SQLQueryInterfaceImpl implements SQLQueryInterface {
             }
             return result;
         } catch ( JDBCException e ) {
-            logExceptionAndTerminateSession(e);
+        	sessionValidation.logExceptionAndTerminateSession(e);
             throw e.getSQLException();
         } catch ( QueryException e ) {
-            logExceptionAndTerminateSession(e);
+        	sessionValidation.logExceptionAndTerminateSession(e);
             throw e;
         } catch( HibernateException e ) {
-            logExceptionAndTerminateSession(e);
+        	sessionValidation.logExceptionAndTerminateSession(e);
             return Collections.emptyList();
         }
 	}
-	
-	// TODO: Find the correct place to put this
-    private void logSQLException(SQLException e) {
-
-        while (e != null) {
-            String message = String.format("SQLException: SQL State:%s, Error Code:%d, Message:%s",
-                    e.getSQLState(), e.getErrorCode(), e.getMessage());
-            logger.warn(message);
-            e = e.getNextException();
-        }
-    }
-	
-	// TODO: Find the correct place to put this
-    private void logExceptionAndTerminateSession( Exception e ) {
-        if ( e instanceof JDBCException ) {
-            JDBCException jdbce = (JDBCException) e;
-            logSQLException(jdbce.getSQLException());
-        }
-        logger.warn("Exception caught during database session: " + e.getMessage() 
-                + ". Rolling back current transaction and terminating session...");
-        e.printStackTrace();
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            s.getTransaction().rollback();
-        } catch (HibernateException e1) {
-            logger.error("Error while rolling back failed transaction :" + e1.getMessage());
-            if ( s != null ) {
-                try {
-                    s.close();
-                } catch ( HibernateException e2) {}
-            }
-        }        
-    }
 
 	@Override
 	@Deprecated
@@ -134,13 +100,13 @@ public class SQLQueryInterfaceImpl implements SQLQueryInterface {
 			}
 			return result;
 		} catch (JDBCException e) {
-			logExceptionAndTerminateSession(e);
+			sessionValidation.logExceptionAndTerminateSession(e);
 			throw e.getSQLException();
 		} catch (QueryException e) {
-			logExceptionAndTerminateSession(e);
+			sessionValidation.logExceptionAndTerminateSession(e);
 			throw e;
 		} catch (HibernateException e) {
-			logExceptionAndTerminateSession(e);
+			sessionValidation.logExceptionAndTerminateSession(e);
 			throw e;
 		}
 	}

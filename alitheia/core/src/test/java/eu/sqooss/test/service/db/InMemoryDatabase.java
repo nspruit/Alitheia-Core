@@ -7,6 +7,7 @@ import org.hibernate.cfg.AnnotationConfiguration;
 import org.mockito.Mockito;
 
 import eu.sqooss.impl.service.db.DBServiceImpl;
+import eu.sqooss.impl.service.db.DBSessionValidation;
 import eu.sqooss.impl.service.db.HQLQueryInterfaceImpl;
 import eu.sqooss.service.db.*;
 import eu.sqooss.service.logging.Logger;
@@ -24,7 +25,8 @@ public final class InMemoryDatabase {
 		db = new DBServiceImpl();
 		db.prepareForTest(sessionFactory, true, Mockito.mock(Logger.class));
 		
-		hqlInterface = new HQLQueryInterfaceImpl(db.getSessionManager(), sessionFactory, Mockito.mock(Logger.class));
+		hqlInterface = new HQLQueryInterfaceImpl(db.getSessionManager(), (DBSessionValidation)db.getSessionManager(),
+				sessionFactory, Mockito.mock(Logger.class));
 	}
 	
 	private void setUpDatabase(Class<?>[] annotatedClasses) {

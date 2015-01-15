@@ -119,16 +119,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
     private AtomicBoolean isInitialised = new AtomicBoolean(false);
     private Properties conProp = new Properties();
     private DBSessionManager sessionManager = null;
-    
-    private void logSQLException(SQLException e) {
-
-        while (e != null) {
-            String message = String.format("SQLException: SQL State:%s, Error Code:%d, Message:%s",
-                    e.getSQLState(), e.getErrorCode(), e.getMessage());
-            logger.warn(message);
-            e = e.getNextException();
-        }
-    }
+    private DBSessionValidation sessionValidation = null;
     
     private boolean getJDBCConnection() {
         String driver = conProp.getProperty("hibernate.connection.driver_class");
@@ -148,7 +139,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
             return false;
         } catch (SQLException e) {
             logger.error("Failed to register driver " + driver);
-            logSQLException(e);
+            sessionValidation.logSQLException(e);
             return false;
         }
         
@@ -163,7 +154,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
         } catch (SQLException e) {
             logger.error("Unable to connect to DB URL " +
                     conProp.getProperty("hibernate.connection.url"));
-            logSQLException(e);
+            sessionValidation.logSQLException(e);
             return false;
         }
     }
@@ -230,7 +221,10 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
                 } 
             }
             sessionFactory = c.buildSessionFactory();
-            sessionManager = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
+            
+            DBSessionManagerImpl ssm = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
+            sessionManager = ssm;
+            sessionValidation = ssm;
             
             if (sessionFactory == null)
                 return false;
@@ -311,8 +305,12 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 	public void prepareForTest(SessionFactory s, boolean setInitialised, Logger l) {
 		this.sessionFactory = s;
 		this.logger = l;
+		
+		DBSessionManagerImpl ssm = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
+		this.sessionManager = ssm;
+		this.sessionValidation = ssm;
+		
 		isInitialised.set(setInitialised);
-		this.sessionManager = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
 	}
 
 	@Override
@@ -329,9 +327,9 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 	@Override
 	public <T> T getQueryInterface(Class<T> queryInterfaceType) {
 		if (queryInterfaceType.isAssignableFrom(HQLQueryInterfaceImpl.class))
-			return (T) new HQLQueryInterfaceImpl(getSessionManager(), sessionFactory, logger);
+			return (T) new HQLQueryInterfaceImpl(sessionManager, sessionValidation, sessionFactory, logger);
 		else if(queryInterfaceType.isAssignableFrom(SQLQueryInterfaceImpl.class))
-			return (T) new SQLQueryInterfaceImpl(sessionManager, sessionFactory, logger, getQueryInterface());
+			return (T) new SQLQueryInterfaceImpl(sessionManager, sessionValidation, sessionFactory, getQueryInterface());
 		return null;
 	}
 }

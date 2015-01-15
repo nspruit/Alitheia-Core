@@ -12,7 +12,7 @@ import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBSessionManager;
 import eu.sqooss.service.logging.Logger;
 
-public class DBSessionManagerImpl implements DBSessionManager {
+public class DBSessionManagerImpl implements DBSessionManager, DBSessionValidation {
 
 	private AtomicBoolean isInitialised = null;
 	private Logger logger = null;
@@ -170,7 +170,8 @@ public class DBSessionManagerImpl implements DBSessionManager {
         }
 	}
 	
-	private boolean checkSession() {
+	@Override
+	public boolean checkSession() {
         if ( !isDBSessionActive() ) {
             logger.warn("Trying to call a DBService method without an active session");
             try {
@@ -182,8 +183,9 @@ public class DBSessionManagerImpl implements DBSessionManager {
         }
         return true;
     }
-
-	private void logExceptionAndTerminateSession( Exception e ) {
+	
+	@Override
+	public void logExceptionAndTerminateSession( Exception e ) {
         if ( e instanceof JDBCException ) {
             JDBCException jdbce = (JDBCException) e;
             logSQLException(jdbce.getSQLException());
@@ -206,7 +208,8 @@ public class DBSessionManagerImpl implements DBSessionManager {
         
     }
 	
-	private void logSQLException(SQLException e) {
+	@Override
+	public void logSQLException(SQLException e) {
 
         while (e != null) {
             String message = String.format("SQLException: SQL State:%s, Error Code:%d, Message:%s",
