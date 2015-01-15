@@ -221,7 +221,10 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
                 } 
             }
             sessionFactory = c.buildSessionFactory();
-            sessionManager = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
+            
+            DBSessionManagerImpl ssm = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
+            sessionManager = ssm;
+            sessionValidation = ssm;
             
             if (sessionFactory == null)
                 return false;
@@ -302,8 +305,12 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 	public void prepareForTest(SessionFactory s, boolean setInitialised, Logger l) {
 		this.sessionFactory = s;
 		this.logger = l;
+		
+		DBSessionManagerImpl ssm = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
+		this.sessionManager = ssm;
+		this.sessionValidation = ssm;
+		
 		isInitialised.set(setInitialised);
-		this.sessionManager = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
 	}
 
 	@Override

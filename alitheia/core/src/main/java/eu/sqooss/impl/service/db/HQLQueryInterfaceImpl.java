@@ -31,6 +31,7 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
 	public HQLQueryInterfaceImpl(DBSessionManager sessionManager, DBSessionValidation sessionValidation,
 			SessionFactory sessionFactory, Logger logger) {
 		this.sessionManager = sessionManager;
+		this.sessionValidation = sessionValidation;
 		this.sessionFactory = sessionFactory;
 		this.logger = logger;
 	}
