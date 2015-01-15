@@ -1,8 +1,10 @@
 package eu.sqooss.impl.service.db;
 
+import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hibernate.HibernateException;
+import org.hibernate.JDBCException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
@@ -163,7 +165,7 @@ public class DBSessionManagerImpl implements DBSessionManager {
                 return (T) s.merge(obj);
             }
         } catch (HibernateException e) {
-//            TODO: logExceptionAndTerminateSession(e);
+            logExceptionAndTerminateSession(e);
             return null;
         }
 	}
@@ -181,4 +183,36 @@ public class DBSessionManagerImpl implements DBSessionManager {
         return true;
     }
 
+	private void logExceptionAndTerminateSession( Exception e ) {
+        if ( e instanceof JDBCException ) {
+            JDBCException jdbce = (JDBCException) e;
+            logSQLException(jdbce.getSQLException());
+        }
+        logger.warn("Exception caught during database session: " + e.getMessage() 
+                + ". Rolling back current transaction and terminating session...");
+        e.printStackTrace();
+        Session s = null;
+        try {
+            s = sessionFactory.getCurrentSession();
+            s.getTransaction().rollback();
+        } catch (HibernateException e1) {
+            logger.error("Error while rolling back failed transaction :" + e1.getMessage());
+            if ( s != null ) {
+                try {
+                    s.close();
+                } catch ( HibernateException e2) {}
+            }
+        }
+        
+    }
+	
+	private void logSQLException(SQLException e) {
+
+        while (e != null) {
+            String message = String.format("SQLException: SQL State:%s, Error Code:%d, Message:%s",
+                    e.getSQLState(), e.getErrorCode(), e.getMessage());
+            logger.warn(message);
+            e = e.getNextException();
+        }
+    }
 }
