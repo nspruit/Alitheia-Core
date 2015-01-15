@@ -1,7 +1,13 @@
 package eu.sqooss.test.service.db;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.either;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,44 +16,28 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.QueryException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class DBHQLQueryTest {
+import eu.sqooss.service.db.HQLQueryInterface;
+import eu.sqooss.service.db.QueryInterface;
 
-	private static InMemoryDatabase db;
+public abstract class HQLQueryInterfaceTest extends QueryInterfaceTest {
+
+	protected abstract HQLQueryInterface getHQLQueryInterface();
 	
-	@BeforeClass
-	public static void setUp() {
-		db = new InMemoryDatabase(new Class<?>[] { DBObject.class });
-	}
-	
-	@AfterClass
-	public static void tearDown() {
-		db.close();
-	}
-	
-	@Before
-	public void beginTransaction() {
-		db.startTransaction();
-	}
-	
-	@After
-	public void closeTransaction() {
-		db.stopTransaction();
+	@Override
+	protected QueryInterface getQueryInterface() {
+		return getHQLQueryInterface();
 	}
 	
 	@Test
 	public void testDoHQL_selectNoObjects() {
 		// Insert test object
 		DBObject obj = new DBObject("object");
-		db.addTestObject(obj);
+		getDB().addTestObject(obj);
 		
 		// Select a non-existent object
-		List<?> objs = db.getHQLInterface().doHQL("select o from DBObject o where o.name = 'unknown'");
+		List<?> objs = getHQLQueryInterface().doHQL("select o from DBObject o where o.name = 'unknown'");
 		assertThat(objs, is(empty()));
 	}
 	
@@ -57,13 +47,13 @@ public class DBHQLQueryTest {
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("object");
 		DBObject objC = new DBObject("other-object");
-		db.addTestObject(objA);
-		db.addTestObject(objB);
-		db.addTestObject(objC);
+		getDB().addTestObject(objA);
+		getDB().addTestObject(objB);
+		getDB().addTestObject(objC);
 		
 		// Select all objects with name "object"
 		@SuppressWarnings("unchecked")
-		List<DBObject> objs = (List<DBObject>) db.getHQLInterface().doHQL("select o from DBObject o where o.name = 'object'");
+		List<DBObject> objs = (List<DBObject>) getHQLQueryInterface().doHQL("select o from DBObject o where o.name = 'object'");
 
 		assertThat(objs, containsInAnyOrder(objA, objB));
 	}
@@ -73,14 +63,14 @@ public class DBHQLQueryTest {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("other-object");
-		db.addTestObject(objA);
-		db.addTestObject(objB);
+		getDB().addTestObject(objA);
+		getDB().addTestObject(objB);
 		
 		// Select second object using a parameter
 		Map<String, Object> params = new HashMap<>();
 		params.put("nameparam", objB.getName());
 		@SuppressWarnings("unchecked")
-		List<DBObject> objs = (List<DBObject>) db.getHQLInterface().doHQL(
+		List<DBObject> objs = (List<DBObject>) getHQLQueryInterface().doHQL(
 				"select o from DBObject o where o.name = :nameparam", params);
 		
 		assertThat(objs, contains(objB));
@@ -91,11 +81,11 @@ public class DBHQLQueryTest {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("other-object");
-		db.addTestObject(objA);
-		db.addTestObject(objB);
+		getDB().addTestObject(objA);
+		getDB().addTestObject(objB);
 		
 		// Execute query without specifying all parameters
-		db.getHQLInterface().doHQL("select o from DBObject o where o.name = :nameparam", new HashMap<String, Object>());
+		getHQLQueryInterface().doHQL("select o from DBObject o where o.name = :nameparam", new HashMap<String, Object>());
 	}
 	
 	@Test
@@ -103,11 +93,11 @@ public class DBHQLQueryTest {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("object");
-		db.addTestObject(objA);
-		db.addTestObject(objB);
+		getDB().addTestObject(objA);
+		getDB().addTestObject(objB);
 		
 		// Select one object with name "object"
-		List<?> objs = db.getHQLInterface().doHQL(
+		List<?> objs = getHQLQueryInterface().doHQL(
 				"select o from DBObject o where o.name = 'object'", new HashMap<String, Object>(), 0);
 
 		assertThat(objs, is(empty()));
@@ -118,12 +108,12 @@ public class DBHQLQueryTest {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("object");
-		db.addTestObject(objA);
-		db.addTestObject(objB);
+		getDB().addTestObject(objA);
+		getDB().addTestObject(objB);
 		
 		// Select one object with name "object"
 		@SuppressWarnings("unchecked")
-		List<DBObject> objs = (List<DBObject>) db.getHQLInterface().doHQL(
+		List<DBObject> objs = (List<DBObject>) getHQLQueryInterface().doHQL(
 				"select o from DBObject o where o.name = 'object'", new HashMap<String, Object>(), 1);
 
 		assertThat(objs, hasSize(1));
@@ -135,12 +125,12 @@ public class DBHQLQueryTest {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("object");
-		db.addTestObject(objA);
-		db.addTestObject(objB);
+		getDB().addTestObject(objA);
+		getDB().addTestObject(objB);
 		
 		// Select one object with name "object"
 		@SuppressWarnings("unchecked")
-		List<DBObject> objs = (List<DBObject>) db.getHQLInterface().doHQL(
+		List<DBObject> objs = (List<DBObject>) getHQLQueryInterface().doHQL(
 				"select o from DBObject o where o.name = 'object'", new HashMap<String, Object>(), 3);
 
 		assertThat(objs, containsInAnyOrder(objA, objB));
@@ -151,12 +141,12 @@ public class DBHQLQueryTest {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("object");
-		db.addTestObject(objA);
-		db.addTestObject(objB);
+		getDB().addTestObject(objA);
+		getDB().addTestObject(objB);
 		
 		// Select one object with name "object"
 		@SuppressWarnings("unchecked")
-		List<DBObject> objs = (List<DBObject>) db.getHQLInterface().doHQL(
+		List<DBObject> objs = (List<DBObject>) getHQLQueryInterface().doHQL(
 				"select o from DBObject o where o.name = 'object'", new HashMap<String, Object>(), -1);
 
 		assertThat(objs, containsInAnyOrder(objA, objB));
@@ -168,16 +158,16 @@ public class DBHQLQueryTest {
 		DBObject objA = new DBObject("object-a");
 		DBObject objB = new DBObject("object-b");
 		DBObject objC = new DBObject("object-c");
-		db.addTestObject(objA);
-		db.addTestObject(objB);
-		db.addTestObject(objC);
+		getDB().addTestObject(objA);
+		getDB().addTestObject(objB);
+		getDB().addTestObject(objC);
 		
 		// Select second object using a parameter
 		@SuppressWarnings("rawtypes")
 		Map<String, Collection> params = new HashMap<>();
 		params.put("namelist", Arrays.asList(objA.getName(), objB.getName()));
 		@SuppressWarnings("unchecked")
-		List<DBObject> objs = (List<DBObject>) db.getHQLInterface().doHQL(
+		List<DBObject> objs = (List<DBObject>) getHQLQueryInterface().doHQL(
 				"select o from DBObject o where o.name in (:namelist)", new HashMap<String, Object>(), params);
 		
 		assertThat(objs, containsInAnyOrder(objA, objB));
@@ -190,12 +180,12 @@ public class DBHQLQueryTest {
 		DBObject objA = new DBObject("object-a");
 		DBObject objB = new DBObject("object-b");
 		DBObject objC = new DBObject("object-c");
-		db.addTestObject(objA);
-		db.addTestObject(objB);
-		db.addTestObject(objC);
+		getDB().addTestObject(objA);
+		getDB().addTestObject(objB);
+		getDB().addTestObject(objC);
 		
 		// Select second object using a parameter
-		db.getHQLInterface().doHQL("select o from DBObject o where o.name in (:namelist)",
+		getHQLQueryInterface().doHQL("select o from DBObject o where o.name in (:namelist)",
 				new HashMap<String, Object>(), new HashMap<String, Collection>());
 	}
 	
@@ -203,10 +193,10 @@ public class DBHQLQueryTest {
 	public void testExecuteUpdate_missingParameter() {
 		// Insert test object
 		DBObject objA = new DBObject("object");
-		db.addTestObject(objA);
+		getDB().addTestObject(objA);
 		
 		// Update the name of the test object
-		db.getHQLInterface().executeUpdate("update DBObject set object_name = :newname where object_id = :obj_id", null);
+		getHQLQueryInterface().executeUpdate("update DBObject set object_name = :newname where object_id = :obj_id", null);
 	}
 	
 	@Test
@@ -214,29 +204,29 @@ public class DBHQLQueryTest {
 		// Insert test objects
 		DBObject objA = new DBObject("object");
 		DBObject objB = new DBObject("object");
-		db.addTestObject(objA);
-		db.addTestObject(objB);
+		getDB().addTestObject(objA);
+		getDB().addTestObject(objB);
 		
 		// Update the name of the test object
 		Map<String, Object> params = new HashMap<>();
 		params.put("newname", "changed");
 		params.put("obj_id", objA.getId());
-		int rows = db.getHQLInterface().executeUpdate("update DBObject set name = :newname where id = :obj_id", params);
+		int rows = getHQLQueryInterface().executeUpdate("update DBObject set name = :newname where id = :obj_id", params);
 		// Commit the change
-		db.getDatabase().getSessionManager().commitDBSession();
+		getDB().getDatabase().getSessionManager().commitDBSession();
 		
 		try {
 			// Start a new session to read the changes
-			db.getDatabase().getSessionManager().startDBSession();
+			getDB().getDatabase().getSessionManager().startDBSession();
 			
 			assertThat(rows, equalTo(1));
-			assertThat(db.getTestObject(DBObject.class, objA.getId()).getName(), equalTo("changed"));
+			assertThat(getDB().getTestObject(DBObject.class, objA.getId()).getName(), equalTo("changed"));
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			db.getDatabase().getSessionManager().startDBSession();
-			db.getHQLInterface().executeUpdate("delete from DBObject", null);
-			db.getDatabase().getSessionManager().commitDBSession();
+			getDB().getDatabase().getSessionManager().startDBSession();
+			getHQLQueryInterface().executeUpdate("delete from DBObject", null);
+			getDB().getDatabase().getSessionManager().commitDBSession();
 		}
 	}
 	
@@ -246,32 +236,32 @@ public class DBHQLQueryTest {
 		DBObject objA = new DBObject("object-a");
 		DBObject objB = new DBObject("object-b");
 		DBObject objC = new DBObject("object-c");
-		db.addTestObject(objA);
-		db.addTestObject(objB);
-		db.addTestObject(objC);
+		getDB().addTestObject(objA);
+		getDB().addTestObject(objB);
+		getDB().addTestObject(objC);
 		
 		// Update the name of the test object
 		Map<String, Object> params = new HashMap<>();
 		params.put("newname", "changed");
-		int rows = db.getHQLInterface().executeUpdate("update DBObject set name = :newname", params);
+		int rows = getHQLQueryInterface().executeUpdate("update DBObject set name = :newname", params);
 		// Commit the change
-		db.getDatabase().getSessionManager().commitDBSession();
+		getDB().getDatabase().getSessionManager().commitDBSession();
 		
 		try {
 			// Start a new session to read the changes
-			db.getDatabase().getSessionManager().startDBSession();
+			getDB().getDatabase().getSessionManager().startDBSession();
 			
 			assertThat(rows, equalTo(3));
-			assertThat(db.getTestObject(DBObject.class, objA.getId()).getName(), equalTo("changed"));
-			assertThat(db.getTestObject(DBObject.class, objB.getId()).getName(), equalTo("changed"));
-			assertThat(db.getTestObject(DBObject.class, objC.getId()).getName(), equalTo("changed"));
+			assertThat(getDB().getTestObject(DBObject.class, objA.getId()).getName(), equalTo("changed"));
+			assertThat(getDB().getTestObject(DBObject.class, objB.getId()).getName(), equalTo("changed"));
+			assertThat(getDB().getTestObject(DBObject.class, objC.getId()).getName(), equalTo("changed"));
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			db.getDatabase().getSessionManager().startDBSession();
-			db.getHQLInterface().executeUpdate("delete from DBObject", null);
-			db.getDatabase().getSessionManager().commitDBSession();
+			getDB().getDatabase().getSessionManager().startDBSession();
+			getHQLQueryInterface().executeUpdate("delete from DBObject", null);
+			getDB().getDatabase().getSessionManager().commitDBSession();
 		}
 	}
-	
+
 }

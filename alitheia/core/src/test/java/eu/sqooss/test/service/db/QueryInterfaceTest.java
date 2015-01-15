@@ -19,7 +19,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class DBQueryTest {
+import eu.sqooss.service.db.QueryInterface;
+
+public abstract class QueryInterfaceTest {
 
 	private static final String objNameA = "test-object-a";
 	private static final String objNameB = "test-object-b";
@@ -27,6 +29,12 @@ public class DBQueryTest {
 	private static final String objNameD = "test-object-d";
 	
 	private static InMemoryDatabase db;
+	
+	protected InMemoryDatabase getDB() {
+		return db;
+	}
+	
+	protected abstract QueryInterface getQueryInterface();
 	
 	@BeforeClass
 	public static void setUp() {
@@ -53,11 +61,11 @@ public class DBQueryTest {
 		DBObject obj = new DBObject(objNameA);
 
 		// Store the object and assert that it succeeded
-		boolean result = db.getDatabase().addRecord(obj);
+		boolean result = getQueryInterface().addRecord(obj);
 		assertTrue(result);
 
 		// Retrieve 
-		DBObject storedObj = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, obj.getId());
+		DBObject storedObj = db.getTestObject(DBObject.class, obj.getId());
 		assertEquals(obj, storedObj);
 	}
 	
@@ -69,7 +77,7 @@ public class DBQueryTest {
 		closeTransaction(); 
 
 		// Store the object and assert that it succeeded
-		boolean result = db.getDatabase().addRecord(obj);
+		boolean result = getQueryInterface().addRecord(obj);
 		assertFalse(result);
 		
 		beginTransaction(); //necessary for closeTransaction() to succeed
@@ -81,17 +89,17 @@ public class DBQueryTest {
 		DBObject objB = new DBObject(objNameB);
 
 		// Store both objects and assert that it succeeded
-		boolean result = db.getDatabase().addRecord(objA);
+		boolean result = getQueryInterface().addRecord(objA);
 		assertTrue(result);
-		result = db.getDatabase().addRecord(objB);
+		result = getQueryInterface().addRecord(objB);
 		assertTrue(result);
 		
 		// Check that both objects have different IDs
 		assertThat(objA.getId(), not(equalTo(objB.getId())));
 
 		// Attempt to retrieve both objects
-		DBObject storedObjA = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, objA.getId());
-		DBObject storedObjB = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, objB.getId());
+		DBObject storedObjA = db.getTestObject(DBObject.class, objA.getId());
+		DBObject storedObjB = db.getTestObject(DBObject.class, objB.getId());
 		assertEquals(objA, storedObjA);
 		assertEquals(objB, storedObjB);
 	}
@@ -101,19 +109,19 @@ public class DBQueryTest {
 		DBObject obj = new DBObject(objNameA);
 
 		// Store the object and assert that it succeeded
-		boolean result = db.getDatabase().addRecord(obj);
+		boolean result = getQueryInterface().addRecord(obj);
 		assertTrue(result);
 
 		// Retrieve the object
-		DBObject storedObj = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, obj.getId());
+		DBObject storedObj = db.getTestObject(DBObject.class, obj.getId());
 		assertEquals(obj, storedObj);
 		
 		// Delete the record
-		result = db.getDatabase().deleteRecord(obj);
+		result = getQueryInterface().deleteRecord(obj);
 		assertTrue(result);
 		
 		// Check whether it is actually deleted
-		storedObj = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, obj.getId());
+		storedObj = db.getTestObject(DBObject.class, obj.getId());
 		assertNull(storedObj);
 	}
 	
@@ -122,18 +130,18 @@ public class DBQueryTest {
 		DBObject obj = new DBObject(objNameA);
 
 		// Store the object and assert that it succeeded
-		boolean result = db.getDatabase().addRecord(obj);
+		boolean result = getQueryInterface().addRecord(obj);
 		assertTrue(result);
 
 		// Retrieve the object
-		DBObject storedObj = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, obj.getId());
+		DBObject storedObj = db.getTestObject(DBObject.class, obj.getId());
 		assertEquals(obj, storedObj);
 		
 		// Make sure there is no active transaction
 		closeTransaction(); 
 				
 		// Delete the record
-		result = db.getDatabase().deleteRecord(obj);
+		result = getQueryInterface().deleteRecord(obj);
 		assertFalse(result);
 		
 		beginTransaction(); //necessary for closeTransaction() to succeed
@@ -145,25 +153,25 @@ public class DBQueryTest {
 		DBObject objB = new DBObject(objNameB);
 		
 		// Store both objects and assert that it succeeded
-		boolean result = db.getDatabase().addRecord(objA);
+		boolean result = getQueryInterface().addRecord(objA);
 		assertTrue(result);
-		result = db.getDatabase().addRecord(objB);
+		result = getQueryInterface().addRecord(objB);
 		assertTrue(result);
 
 		// Attempt to retrieve both objects
-		DBObject storedObjA = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, objA.getId());
-		DBObject storedObjB = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, objB.getId());
+		DBObject storedObjA = db.getTestObject(DBObject.class, objA.getId());
+		DBObject storedObjB = db.getTestObject(DBObject.class, objB.getId());
 		assertEquals(objA, storedObjA);
 		assertEquals(objB, storedObjB);
 		
 		// Delete the record for objA
-		result = db.getDatabase().deleteRecord(objA);
+		result = getQueryInterface().deleteRecord(objA);
 		assertTrue(result);
 		
 		// Check whether only objA is deleted
-		storedObjA = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, objA.getId());
+		storedObjA = db.getTestObject(DBObject.class, objA.getId());
 		assertNull(storedObjA);
-		storedObjB = (DBObject)db.getSessionFactory().getCurrentSession().get(DBObject.class, objB.getId());
+		storedObjB = db.getTestObject(DBObject.class, objB.getId());
 		assertEquals(objB, storedObjB);
 	}
 
@@ -172,11 +180,11 @@ public class DBQueryTest {
 		DBObject objC = new DBObject(objNameC);
 		
 		// Store object and verify it succeeded
-		boolean result = db.getDatabase().addRecord(objC);
+		boolean result = getQueryInterface().addRecord(objC);
 		assertTrue(result);
 		
 		// Check whether the findObjectById function returns the correct object
-		DBObject storedObjC = (DBObject)db.getDatabase().findObjectById(DBObject.class, objC.getId());
+		DBObject storedObjC = (DBObject)getQueryInterface().findObjectById(DBObject.class, objC.getId());
 		assertEquals(objC, storedObjC);
 	}
 	
@@ -185,14 +193,14 @@ public class DBQueryTest {
 		DBObject objC = new DBObject(objNameC);
 		
 		// Store object and verify it succeeded
-		boolean result = db.getDatabase().addRecord(objC);
+		boolean result = getQueryInterface().addRecord(objC);
 		assertTrue(result);
 		
 		// Make sure there is no active transaction
 		closeTransaction(); 
 		
 		// Check whether the findObjectById function returns null
-		DBObject storedObjC = (DBObject)db.getDatabase().findObjectById(DBObject.class, objC.getId());
+		DBObject storedObjC = (DBObject)getQueryInterface().findObjectById(DBObject.class, objC.getId());
 		assertNull(storedObjC);
 		
 		beginTransaction(); //necessary for closeTransaction() to succeed
@@ -203,11 +211,11 @@ public class DBQueryTest {
 		DBObject objD = new DBObject(objNameD);
 		
 		// Store object and verify it succeeded
-		boolean result = db.getDatabase().addRecord(objD);
+		boolean result = getQueryInterface().addRecord(objD);
 		assertTrue(result);
 		
 		// Check whether the findObjectByIdForUpdate function returns the correct object
-		DBObject storedObjD = (DBObject)db.getDatabase().findObjectByIdForUpdate(DBObject.class, objD.getId());
+		DBObject storedObjD = (DBObject)getQueryInterface().findObjectByIdForUpdate(DBObject.class, objD.getId());
 		assertEquals(objD, storedObjD);
 	}
 	
@@ -216,7 +224,7 @@ public class DBQueryTest {
 		DBObject objD = new DBObject(objNameD);
 		
 		// Store object and verify it succeeded
-		boolean result = db.getDatabase().addRecord(objD);
+		boolean result = getQueryInterface().addRecord(objD);
 		assertTrue(result);
 		
 		// Create a map with properties of objD
@@ -224,7 +232,7 @@ public class DBQueryTest {
 		properties.put("name", objNameD);
 		
 		// Check whether the findObjectsByProperties function returns a list with only objD in it
-		List<DBObject> res = db.getDatabase().findObjectsByProperties(DBObject.class, properties);
+		List<DBObject> res = getQueryInterface().findObjectsByProperties(DBObject.class, properties);
 		assertEquals(1, res.size());
 		assertEquals(objD, res.get(0));
 	}
@@ -234,7 +242,7 @@ public class DBQueryTest {
 		DBObject objD = new DBObject(objNameD);
 		
 		// Store object and verify it succeeded
-		boolean result = db.getDatabase().addRecord(objD);
+		boolean result = getQueryInterface().addRecord(objD);
 		assertTrue(result);
 		
 		// Make sure there is no active transaction
@@ -245,7 +253,7 @@ public class DBQueryTest {
 		properties.put("name", objNameD);		
 		
 		// Check whether the findObjectsByProperties function returns the empty list
-		List<DBObject> res = db.getDatabase().findObjectsByProperties(DBObject.class, properties);
+		List<DBObject> res = getQueryInterface().findObjectsByProperties(DBObject.class, properties);
 		assertEquals(Collections.emptyList(),res);
 		
 		beginTransaction(); //necessary for closeTransaction() to succeed
@@ -256,7 +264,7 @@ public class DBQueryTest {
 		DBObject objD = new DBObject(objNameD);
 		
 		// Store object and verify it succeeded
-		boolean result = db.getDatabase().addRecord(objD);
+		boolean result = getQueryInterface().addRecord(objD);
 		assertTrue(result);
 		
 		// Create a map with properties of objD
@@ -265,7 +273,7 @@ public class DBQueryTest {
 		properties.put("name", objNameD);
 		
 		// Check whether the findObjectsByProperties function returns a list with only objD in it
-		List<DBObject> res = db.getDatabase().findObjectsByProperties(DBObject.class, properties);
+		List<DBObject> res = getQueryInterface().findObjectsByProperties(DBObject.class, properties);
 		assertEquals(1, res.size());
 		assertEquals(objD, res.get(0));
 	}
@@ -276,9 +284,9 @@ public class DBQueryTest {
 		DBObject objD2 = new DBObject(objNameD);
 		
 		// Store objects and verify it succeeded
-		boolean result = db.getDatabase().addRecord(objD);
+		boolean result = getQueryInterface().addRecord(objD);
 		assertTrue(result);
-		result = db.getDatabase().addRecord(objD2);
+		result = getQueryInterface().addRecord(objD2);
 		assertTrue(result);
 		
 		// Create a map with the common name property of objD and objD2
@@ -286,7 +294,7 @@ public class DBQueryTest {
 		properties.put("name", objNameD);
 		
 		// Check whether the findObjectsByProperties function returns a list with only objD and objD2 in it
-		List<DBObject> res = db.getDatabase().findObjectsByProperties(DBObject.class, properties);
+		List<DBObject> res = getQueryInterface().findObjectsByProperties(DBObject.class, properties);
 		assertEquals(2, res.size());
 		assertTrue(res.contains(objD));
 		assertTrue(res.contains(objD2));
@@ -297,7 +305,7 @@ public class DBQueryTest {
 		DBObject objD = new DBObject(objNameD);
 		
 		// Store object and verify it succeeded
-		boolean result = db.getDatabase().addRecord(objD);
+		boolean result = getQueryInterface().addRecord(objD);
 		assertTrue(result);
 		
 		// Create a map with properties of objD
@@ -305,7 +313,7 @@ public class DBQueryTest {
 		properties.put("name", objNameD);
 		
 		// Check whether the findObjectsByPropertiesForUpdate function returns a list with only objD in it
-		List<DBObject> res = db.getDatabase().findObjectsByPropertiesForUpdate(DBObject.class, properties);
+		List<DBObject> res = getQueryInterface().findObjectsByPropertiesForUpdate(DBObject.class, properties);
 		assertEquals(1, res.size());
 		assertEquals(objD, res.get(0));
 	}
@@ -315,7 +323,7 @@ public class DBQueryTest {
 		DBObject objD = new DBObject(objNameD);
 		
 		// Store object and verify it succeeded
-		boolean result = db.getDatabase().addRecord(objD);
+		boolean result = getQueryInterface().addRecord(objD);
 		assertTrue(result);
 		
 		// Create a map with properties of objD
@@ -324,7 +332,7 @@ public class DBQueryTest {
 		properties.put("name", objNameD);
 		
 		// Check whether the findObjectsByPropertiesForUpdate function returns a list with only objD in it
-		List<DBObject> res = db.getDatabase().findObjectsByPropertiesForUpdate(DBObject.class, properties);
+		List<DBObject> res = getQueryInterface().findObjectsByPropertiesForUpdate(DBObject.class, properties);
 		assertEquals(1, res.size());
 		assertEquals(objD, res.get(0));
 	}
@@ -335,9 +343,9 @@ public class DBQueryTest {
 		DBObject objD2 = new DBObject(objNameD);
 		
 		// Store objects and verify it succeeded
-		boolean result = db.getDatabase().addRecord(objD);
+		boolean result = getQueryInterface().addRecord(objD);
 		assertTrue(result);
-		result = db.getDatabase().addRecord(objD2);
+		result = getQueryInterface().addRecord(objD2);
 		assertTrue(result);
 		
 		// Create a map with the common name property of objD and objD2
@@ -345,9 +353,10 @@ public class DBQueryTest {
 		properties.put("name", objNameD);
 		
 		// Check whether the findObjectsByPropertiesForUpdate function returns a list with only objD and objD2 in it
-		List<DBObject> res = db.getDatabase().findObjectsByPropertiesForUpdate(DBObject.class, properties);
+		List<DBObject> res = getQueryInterface().findObjectsByPropertiesForUpdate(DBObject.class, properties);
 		assertEquals(2, res.size());
 		assertTrue(res.contains(objD));
 		assertTrue(res.contains(objD2));
 	}
+	
 }
