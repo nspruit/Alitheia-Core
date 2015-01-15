@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.hibernate.QueryException;
 
-public interface SQLQueryInterface {
+public interface SQLQueryInterface extends QueryInterface {
 
 	/**
      * Execute a complete SQL query to the database.
