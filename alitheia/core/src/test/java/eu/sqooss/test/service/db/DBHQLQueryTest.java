@@ -223,20 +223,20 @@ public class DBHQLQueryTest {
 		params.put("obj_id", objA.getId());
 		int rows = db.getDatabase().executeUpdate("update DBObject set name = :newname where id = :obj_id", params);
 		// Commit the change
-		db.getDatabase().commitDBSession();
+		db.getDatabase().getSessionManager().commitDBSession();
 		
 		try {
 			// Start a new session to read the changes
-			db.getDatabase().startDBSession();
+			db.getDatabase().getSessionManager().startDBSession();
 			
 			assertThat(rows, equalTo(1));
 			assertThat(db.getTestObject(DBObject.class, objA.getId()).getName(), equalTo("changed"));
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			db.getDatabase().startDBSession();
+			db.getDatabase().getSessionManager().startDBSession();
 			db.getDatabase().executeUpdate("delete from DBObject", null);
-			db.getDatabase().commitDBSession();
+			db.getDatabase().getSessionManager().commitDBSession();
 		}
 	}
 	
@@ -255,11 +255,11 @@ public class DBHQLQueryTest {
 		params.put("newname", "changed");
 		int rows = db.getDatabase().executeUpdate("update DBObject set name = :newname", params);
 		// Commit the change
-		db.getDatabase().commitDBSession();
+		db.getDatabase().getSessionManager().commitDBSession();
 		
 		try {
 			// Start a new session to read the changes
-			db.getDatabase().startDBSession();
+			db.getDatabase().getSessionManager().startDBSession();
 			
 			assertThat(rows, equalTo(3));
 			assertThat(db.getTestObject(DBObject.class, objA.getId()).getName(), equalTo("changed"));
@@ -268,9 +268,9 @@ public class DBHQLQueryTest {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			db.getDatabase().startDBSession();
+			db.getDatabase().getSessionManager().startDBSession();
 			db.getDatabase().executeUpdate("delete from DBObject", null);
-			db.getDatabase().commitDBSession();
+			db.getDatabase().getSessionManager().commitDBSession();
 		}
 	}
 	

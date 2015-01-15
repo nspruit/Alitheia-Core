@@ -51,12 +51,12 @@ public class ResteasyServlet extends HttpServletDispatcher {
 	    
 	    DBService db = AlitheiaCore.getInstance().getDBService();
 	    
-	    if (!db.isDBSessionActive())
-	        db.startDBSession();
+	    if (!db.getSessionManager().isDBSessionActive())
+	        db.getSessionManager().startDBSession();
 	    
 	    super.service(httpServletRequest, httpServletResponse);
 	    
-	    if (db.isDBSessionActive())
-	        db.commitDBSession();
+	    if (db.getSessionManager().isDBSessionActive())
+	        db.getSessionManager().commitDBSession();
 	}
 }

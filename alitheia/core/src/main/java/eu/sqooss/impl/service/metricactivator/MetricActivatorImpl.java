@@ -286,7 +286,7 @@ public class MetricActivatorImpl  implements MetricActivator {
         @Override
         protected void run() throws Exception {
             DBService dbs = AlitheiaCore.getInstance().getDBService();
-            dbs.startDBSession();
+            dbs.getSessionManager().startDBSession();
             sp = DAObject.loadDAObyId(sp.getId(), StoredProject.class);
             PluginInfo mi = pa.getPluginInfo(m);
             Set<Class<? extends DAObject>> actTypes = mi.getActivationTypes();
@@ -364,7 +364,7 @@ public class MetricActivatorImpl  implements MetricActivator {
             	}
             }
             sched.enqueueNoDependencies(jobs);
-            dbs.commitDBSession();
+            dbs.getSessionManager().commitDBSession();
         }
         
         @Override

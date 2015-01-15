@@ -397,7 +397,7 @@ public class PAServiceImpl implements PluginAdmin, ServiceListener {
         // Get a reference to the affected service
         ServiceReference affectedService = event.getServiceReference();
 
-        sobjDB.startDBSession();
+        sobjDB.getSessionManager().startDBSession();
         
         // Find out what happened to the service
         switch (event.getType()) {
@@ -415,7 +415,7 @@ public class PAServiceImpl implements PluginAdmin, ServiceListener {
         }
 
         // Close the DB session
-        sobjDB.commitDBSession();
+        sobjDB.getSessionManager().commitDBSession();
     }
 
 /* ===[ Implementation of the PluginAdmin interface ]===================== */
@@ -646,7 +646,7 @@ public class PAServiceImpl implements PluginAdmin, ServiceListener {
 
             try {
                 DBService dbs = AlitheiaCore.getInstance().getDBService();
-                dbs.startDBSession();
+                dbs.getSessionManager().startDBSession();
                 // Get the metric plug-in's service
                 ServiceReference srefPlugin = getPluginService(serviceID);
 
@@ -674,7 +674,7 @@ public class PAServiceImpl implements PluginAdmin, ServiceListener {
                                 pluginInfo.getHashcode(), pluginInfo);
                     }
                 }
-                dbs.commitDBSession();
+                dbs.getSessionManager().commitDBSession();
             } catch (Exception e) {
                 logger.warn(UNINSTALL_FAILED, e);
             }

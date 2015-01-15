@@ -106,7 +106,7 @@ public class OhlohUpdater extends UpdaterBaseJob {
         
         
         for (String file : files) {
-            dbs.startDBSession();
+            dbs.getSessionManager().startDBSession();
             
             SAXReader reader = new SAXReader(false);
             Document document = null;
@@ -163,7 +163,7 @@ public class OhlohUpdater extends UpdaterBaseJob {
                     dbs.addRecord(od);
                 }
             }
-            dbs.commitDBSession();
+            dbs.getSessionManager().commitDBSession();
         }
     }
     

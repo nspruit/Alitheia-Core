@@ -121,7 +121,7 @@ public class ProjectFileState extends DAObject {
     public static ProjectFileState fromStatus(int status) {
         DBService dbs = AlitheiaCore.getInstance().getDBService();
 
-        if (!dbs.isDBSessionActive())
+        if (!dbs.getSessionManager().isDBSessionActive())
             return null;
 
         Map<String, Object> params = new HashMap<String, Object>();

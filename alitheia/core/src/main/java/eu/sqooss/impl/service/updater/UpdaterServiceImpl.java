@@ -571,8 +571,8 @@ public class UpdaterServiceImpl implements UpdaterService, JobStateListener {
                 return;
             }
 
-            if (!dbs.isDBSessionActive())
-                dbs.startDBSession();
+            if (!dbs.getSessionManager().isDBSessionActive())
+                dbs.getSessionManager().startDBSession();
             StoredProject sp = StoredProject.loadDAObyId(projectId, StoredProject.class);
             removeUpdater(sp, ut);
 
@@ -580,7 +580,7 @@ public class UpdaterServiceImpl implements UpdaterService, JobStateListener {
                 logger.warn(ut + " updater job for project " + sp
                         + " did not finish properly");
             }
-            dbs.commitDBSession();
+            dbs.getSessionManager().commitDBSession();
         }
     }
     

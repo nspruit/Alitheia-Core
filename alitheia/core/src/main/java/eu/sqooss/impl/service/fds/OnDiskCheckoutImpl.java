@@ -122,7 +122,7 @@ class OnDiskCheckoutImpl implements OnDiskCheckout {
     /** {@inheritDoc} */
     public ProjectVersion getProjectVersion() {
         DBService dbs = AlitheiaCore.getInstance().getDBService();
-        revision = dbs.attachObjectToDBSession(revision);
+        revision = dbs.getSessionManager().attachObjectToDBSession(revision);
         return revision;
     }
     

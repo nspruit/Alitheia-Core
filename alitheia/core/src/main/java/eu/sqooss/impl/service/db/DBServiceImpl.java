@@ -65,6 +65,7 @@ import org.osgi.framework.BundleContext;
 import eu.sqooss.core.AlitheiaCoreService;
 import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBService;
+import eu.sqooss.service.db.DBSessionManager;
 import eu.sqooss.service.logging.Logger;
 import eu.sqooss.service.util.URIUtills;
 
@@ -125,6 +126,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
     private BundleContext bc = null;
     private AtomicBoolean isInitialised = new AtomicBoolean(false);
     private Properties conProp = new Properties();
+    private DBSessionManager sessionManager = null;
     
     private void logSQLException(SQLException e) {
 
@@ -160,7 +162,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
     }
    
     private boolean checkSession() {
-        if ( !isDBSessionActive() ) {
+        if ( !sessionManager.isDBSessionActive() ) {
             logger.warn("Trying to call a DBService method without an active session");
             try {
                 throw new Exception("No active session.");
@@ -272,6 +274,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
                 } 
             }
             sessionFactory = c.buildSessionFactory();
+            sessionManager = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
             
             if (sessionFactory == null)
                 return false;
@@ -351,7 +354,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
             logger.warn("findObjectsByProperties(): invalid properties map. Restarting session...");
             // Automatically restart a session
             // (just be careful with preloaded DAOs that become detached)
-            startDBSession();
+            sessionManager.startDBSession();
             return Collections.emptyList();
         }
     }
@@ -369,7 +372,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
      */
     public List<?> doSQL(String sql, Map<String, Object> params)
         throws SQLException, QueryException {
-        boolean autoSession = !isDBSessionActive();
+        boolean autoSession = !sessionManager.isDBSessionActive();
         try {
             Session s = sessionFactory.getCurrentSession();
             if (autoSession) {
@@ -400,7 +403,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 
     public int callProcedure(String procName, List<String> args, Map<String, Object> params)
 			throws SQLException, QueryException {
-		boolean autoSession = !isDBSessionActive();
+		boolean autoSession = !sessionManager.isDBSessionActive();
 		StringBuilder sql = new StringBuilder("call " + procName + "(");
 		
 		for (String arg : args) {
@@ -599,146 +602,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
     
     public Logger logger() {
         return this.logger;
-    }
-    
-    public boolean startDBSession() {
-        //Boot time check
-        if(isInitialised.get() == false) {
-            return false;
-        }
-        
-        if( isDBSessionActive() ) {
-            logger.debug("startDBSession() - a session was already started for that thread");
-            return true;
-        }
-        
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            //logger.debug("startDBSession: " + s + "[hashcode=" + s.hashCode() + ",open=" + s.isOpen() + "]");
-            s.beginTransaction();
-        } catch (HibernateException e) {
-            logger.error("startDBSession() - error while initializing session: " + e.getMessage());
-            if ( s != null ) {
-                try {
-                    s.close();
-                } catch (HibernateException e1) {
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public boolean commitDBSession() {
-        if ( !checkSession() )
-            return false;
-        
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            //logger.debug("commitDBSession: " + s + "[hashcode=" + s.hashCode() + ",open=" + s.isOpen() + "]");
-            s.getTransaction().commit();
-        } catch (HibernateException e) {
-            logger.error("commitDBSession() - error while committing transaction: " + e.getMessage());
-            if ( s != null ) {
-                // The docs say to do so
-                try {
-                    s.getTransaction().rollback();
-                } catch (HibernateException e1) {
-                    try {
-                        s.close();
-                    } catch (HibernateException e2) {
-                    }
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public boolean rollbackDBSession() {
-        if ( !checkSession() )
-            return false;
-        
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            s.getTransaction().rollback();
-        } catch (HibernateException e) {
-            logger.error("commitDBSession() - error while rolling back transaction: " + e.getMessage());
-            if ( s != null ) {
-                try {
-                    s.close();
-                } catch (HibernateException e1) {
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-    
-    public boolean flushDBSession() {
-        if ( !checkSession() )
-            return false;
-        
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            s.flush();
-            s.clear();
-        } catch (HibernateException e) {
-            logger.error("flushDBSession() - error while flushing session: " + e.getMessage());
-            if ( s != null ) {
-                try {
-                    s.close();
-                } catch (HibernateException e1) {
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public boolean isDBSessionActive() {
-        //Boot time check
-        if(isInitialised.get() == false) {
-            return false;
-        }
-        
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            return s.getTransaction() != null && s.getTransaction().isActive();
-        } catch (HibernateException e) {
-            logger.error("isDBSessionActive() - error while checking session status: " + e.getMessage());
-            if ( s != null ) {
-                try {
-                    s.close();
-                } catch (HibernateException e1) {
-                }
-            }
-            return false;
-        }
-    }
-        
-    @SuppressWarnings("unchecked")
-    public <T extends DAObject> T attachObjectToDBSession(T obj) {
-        if( !checkSession() )
-            return null;
-
-        try {
-            Session s = sessionFactory.getCurrentSession();
-            if ( s.contains(obj)) {
-                return obj;
-            } else {
-                return (T) s.merge(obj);
-            }
-        } catch (HibernateException e) {
-            logExceptionAndTerminateSession(e);
-            return null;
-        }
-    }
+    } 
     
     public int executeUpdate(String hql, Map<String, Object> params) 
     throws QueryException {
@@ -823,6 +687,18 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 		this.sessionFactory = s;
 		this.logger = l;
 		isInitialised.set(setInitialised);
+		this.sessionManager = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
+	}
+
+	@Override
+	public DBSessionManager getSessionManager() {
+		return sessionManager;
+	}
+
+	@Override
+	public <T> T getQueryInterface(Class<T> queryInterfaceType) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
 

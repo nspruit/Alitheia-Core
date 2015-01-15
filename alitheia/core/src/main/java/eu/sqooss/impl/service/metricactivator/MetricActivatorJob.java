@@ -83,7 +83,7 @@ public class MetricActivatorJob extends Job {
 
     @Override
     protected void run() throws Exception {
-        dbs.startDBSession();
+        dbs.getSessionManager().startDBSession();
         metric.setJob(this);
         DAObject obj = dbs.findObjectById(daoType, daoID);
 
@@ -108,13 +108,13 @@ public class MetricActivatorJob extends Job {
         } catch (AlreadyProcessingException ape) {
             logger.warn("DAO id " + daoID + " is locked, job has been " +
                     "rescheduled");
-            dbs.rollbackDBSession();
+            dbs.getSessionManager().rollbackDBSession();
             return;
         } catch (LockAcquisitionException lae) {
-            dbs.rollbackDBSession();
+            dbs.getSessionManager().rollbackDBSession();
         }
 
-        if (!dbs.commitDBSession()) {
+        if (!dbs.getSessionManager().commitDBSession()) {
             logger.warn("commit failed - restarting metric job");
             restart();
         }

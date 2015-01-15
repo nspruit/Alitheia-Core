@@ -157,8 +157,8 @@ public class AdminServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException,
                                                               IOException {
-        if (!db.isDBSessionActive()) {
-            db.startDBSession();
+        if (!db.getSessionManager().isDBSessionActive()) {
+            db.getSessionManager().startDBSession();
         } 
         
         try {
@@ -199,8 +199,8 @@ public class AdminServlet extends HttpServlet {
             logger.warn("Got a NPE while rendering a page.",e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         } finally {
-            if (db.isDBSessionActive()) {
-                db.commitDBSession();
+            if (db.getSessionManager().isDBSessionActive()) {
+                db.getSessionManager().commitDBSession();
             }
         }
     }
@@ -208,8 +208,8 @@ public class AdminServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request,
                           HttpServletResponse response) throws ServletException,
                                                                IOException {
-        if (!db.isDBSessionActive()) {
-            db.startDBSession();
+        if (!db.getSessionManager().isDBSessionActive()) {
+            db.getSessionManager().startDBSession();
         } 
         
         try {
@@ -236,8 +236,8 @@ public class AdminServlet extends HttpServlet {
             logger.warn("Got a NPE while handling POST data.");
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         } finally {
-            if (db.isDBSessionActive()) {
-                db.commitDBSession();
+            if (db.getSessionManager().isDBSessionActive()) {
+                db.getSessionManager().commitDBSession();
             }
         }
     }
