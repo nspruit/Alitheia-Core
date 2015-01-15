@@ -22,7 +22,7 @@ public interface DBSessionValidation {
     
     /**
      * 
-     * @param e
+     * @param e the exception to be logged
      */
     public void logSQLException(SQLException e);
 	

@@ -81,12 +81,31 @@ public interface DBService extends AlitheiaCoreService {
      */
     public Logger logger();
     
-    
-    
+    /**
+     * Get the object responsible for all the session management operations
+     * like starting, committing and rolling back a database transaction.
+     * See {@link eu.sqooss.service.db.DBSessionManager}} for more details 
+     * about the available operations.
+     * @return the instance of the DBSessionManager
+     */
     public DBSessionManager getSessionManager();
     
+    /**
+     * Returns a basic implementation of the QueryInterface used to perform
+     * simple queries to the database, like adding, deleting and finding
+     * records. For a complete list of the available operations, see
+     * {@link eu.sqooss.service.db.QueryInterface}.
+     * @return a basic QueryInterface instance
+     */
     public QueryInterface getQueryInterface();
     
+    /**
+     * This function can be used to retrieve more extended implementations 
+     * of the QueryInterface, for instance an HQLQueryInterface instance.
+     * @param queryInterfaceType The class of the implementation to be used
+     * as QueryInterface
+     * @return an implementation of the QueryInterface interface
+     */
     public <T> T getQueryInterface(Class<T> queryInterfaceType);
 }
 

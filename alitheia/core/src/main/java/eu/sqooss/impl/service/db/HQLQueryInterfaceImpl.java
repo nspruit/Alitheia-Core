@@ -1,6 +1,5 @@
 package eu.sqooss.impl.service.db;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
-import org.hibernate.JDBCException;
 import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.QueryException;
@@ -93,27 +91,18 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
         }
     }
 
-	/* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#addRecord(eu.sqooss.service.db.DAObject)
-     */
     public boolean addRecord(DAObject record) {
         ArrayList<DAObject> tmpList = new ArrayList<DAObject>(1);
         tmpList.add(record);
         return addRecords(tmpList);
     }
 
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#deleteRecord(eu.sqooss.service.db.DAObject)
-     */
     public boolean deleteRecord(DAObject record) {
         ArrayList<DAObject> tmpList = new ArrayList<DAObject>(1);
         tmpList.add(record);
         return deleteRecords(tmpList);
     }
 
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#addRecords(java.util.List)
-     */
     public <T extends DAObject> boolean addRecords(List<T> records) {
         if( !sessionValidation.checkSession() )
             return false;
@@ -139,9 +128,6 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
         }
     }
 
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#deleteRecords(java.util.List)
-     */
     public <T extends DAObject> boolean deleteRecords(List<T> records) {
         if( !sessionValidation.checkSession() )
             return false;
@@ -167,49 +153,32 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
         }
     }
     
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String)
-     */
     public List<?> doHQL(String hql)
         throws QueryException {
         return doHQL(hql, null, null, false, -1, -1);
     }
 
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map)
-     */
     public List<?> doHQL(String hql, Map<String, Object> params) 
         throws QueryException {
         return doHQL(hql, params, null, false, -1, -1);
     }
 
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map, int)
-     */
     public List<?> doHQL(String hql, Map<String, Object> params, int limit) 
         throws QueryException {
         return doHQL(hql, params, null, false, 0, limit);
     }
 
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map, boolean)
-     */
     public List<?> doHQL(String hql, Map<String, Object> params, boolean lockForUpdate) 
         throws QueryException {
         return doHQL(hql, params, null, lockForUpdate, -1, -1);
     }
 
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map, java.util.Map)
-     */
     public List<?> doHQL(String hql, Map<String, Object> params,
             Map<String, Collection> collectionParams) 
         throws QueryException {
         return doHQL(hql, params, collectionParams, false, -1, -1);
     }
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doHQL(java.lang.String, java.util.Map, java.util.Map, boolean, int, int)
-     */
+   
     public List<?> doHQL(String hql, Map<String, Object> params,
             Map<String, Collection> collectionParams, boolean lockForUpdate, int start, int limit) 
         throws QueryException {
