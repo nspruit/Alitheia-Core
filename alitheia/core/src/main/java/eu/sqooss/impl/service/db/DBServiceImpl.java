@@ -36,28 +36,22 @@ package eu.sqooss.impl.service.db;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.net.URL;
 import java.net.URI;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.hibernate.HibernateException;
-import org.hibernate.QueryException;
-import org.hibernate.JDBCException;
-import org.hibernate.Query;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
-import org.hibernate.cfg.Configuration;	
+import org.hibernate.cfg.Configuration;
 import org.osgi.framework.BundleContext;
 
 import eu.sqooss.core.AlitheiaCoreService;
@@ -134,42 +128,6 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
             logger.warn(message);
             e = e.getNextException();
         }
-    }
-    
-    private void logExceptionAndTerminateSession( Exception e ) {
-        if ( e instanceof JDBCException ) {
-            JDBCException jdbce = (JDBCException) e;
-            logSQLException(jdbce.getSQLException());
-        }
-        logger.warn("Exception caught during database session: " + e.getMessage() 
-                + ". Rolling back current transaction and terminating session...");
-        e.printStackTrace();
-        Session s = null;
-        try {
-            s = sessionFactory.getCurrentSession();
-            s.getTransaction().rollback();
-        } catch (HibernateException e1) {
-            logger.error("Error while rolling back failed transaction :" + e1.getMessage());
-            if ( s != null ) {
-                try {
-                    s.close();
-                } catch ( HibernateException e2) {}
-            }
-        }
-        
-    }
-   
-    private boolean checkSession() {
-        if ( !sessionManager.isDBSessionActive() ) {
-            logger.warn("Trying to call a DBService method without an active session");
-            try {
-                throw new Exception("No active session.");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return false;
-        }
-        return true;
     }
     
     private boolean getJDBCConnection() {
@@ -299,86 +257,6 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
             instance = new DBServiceImpl();
         return instance;
     }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doSQL(java.lang.String)
-     */
-    public List<?> doSQL(String sql)
-        throws SQLException {
-        return doSQL(sql, null);
-    }
-
-    /* (non-Javadoc)
-     * @see eu.sqooss.service.db.DBService#doSQL(java.lang.String, java.util.Map)
-     */
-    public List<?> doSQL(String sql, Map<String, Object> params)
-        throws SQLException, QueryException {
-        boolean autoSession = !sessionManager.isDBSessionActive();
-        try {
-            Session s = sessionFactory.getCurrentSession();
-            if (autoSession) {
-                s.beginTransaction();
-            }
-            Query query = s.createSQLQuery(sql);
-            if ( params != null ) {
-                for ( String param : params.keySet() ) {
-                    query.setParameter(param, params.get(param));
-                }
-            }
-            List<?> result = query.list();
-            if (autoSession) {
-                s.getTransaction().commit();
-            }
-            return result;
-        } catch ( JDBCException e ) {
-            logExceptionAndTerminateSession(e);
-            throw e.getSQLException();
-        } catch ( QueryException e ) {
-            logExceptionAndTerminateSession(e);
-            throw e;
-        } catch( HibernateException e ) {
-            logExceptionAndTerminateSession(e);
-            return Collections.emptyList();
-        }
-    }
-
-    public int callProcedure(String procName, List<String> args, Map<String, Object> params)
-			throws SQLException, QueryException {
-		boolean autoSession = !sessionManager.isDBSessionActive();
-		StringBuilder sql = new StringBuilder("call " + procName + "(");
-		
-		for (String arg : args) {
-			sql.append(":").append(arg).append(",");
-		}
-		sql.deleteCharAt(sql.lastIndexOf(",")).append(")");
-		
-		try {
-			Session s = sessionFactory.getCurrentSession();
-			if (autoSession) {
-				s.beginTransaction();
-			}
-			Query query = s.createSQLQuery(sql.toString());
-			if (params != null) {
-				for (String param : params.keySet()) {
-					query.setParameter(param, params.get(param));
-				}
-			}
-			int result = query.executeUpdate();
-			if (autoSession) {
-				s.getTransaction().commit();
-			}
-			return result;
-		} catch (JDBCException e) {
-			logExceptionAndTerminateSession(e);
-			throw e.getSQLException();
-		} catch (QueryException e) {
-			logExceptionAndTerminateSession(e);
-			throw e;
-		} catch (HibernateException e) {
-			logExceptionAndTerminateSession(e);
-			throw e;
-		}
-	}
     
     public Logger logger() {
         return this.logger;
@@ -451,7 +329,9 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 	@Override
 	public <T> T getQueryInterface(Class<T> queryInterfaceType) {
 		if (queryInterfaceType.isAssignableFrom(HQLQueryInterfaceImpl.class))
-			return (T)new HQLQueryInterfaceImpl(getSessionManager(), sessionFactory, logger);
+			return (T) new HQLQueryInterfaceImpl(getSessionManager(), sessionFactory, logger);
+		else if(queryInterfaceType.isAssignableFrom(SQLQueryInterfaceImpl.class))
+			return (T) new SQLQueryInterfaceImpl(sessionManager, sessionFactory, logger, getQueryInterface());
 		return null;
 	}
 }
