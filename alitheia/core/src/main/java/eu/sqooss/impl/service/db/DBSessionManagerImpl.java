@@ -12,13 +12,14 @@ import eu.sqooss.service.logging.Logger;
 
 public class DBSessionManagerImpl implements DBSessionManager {
 
-	private AtomicBoolean isInitialised = new AtomicBoolean(false);
+	private AtomicBoolean isInitialised = null;
 	private Logger logger = null;
     private SessionFactory sessionFactory = null;
 
-	public DBSessionManagerImpl(SessionFactory factory, Logger logger) {
+	public DBSessionManagerImpl(SessionFactory factory, Logger logger, AtomicBoolean isInit) {
 		this.sessionFactory = factory;
 		this.logger = logger;
+		this.isInitialised = isInit;
 	}
 
 	@Override
