@@ -576,6 +576,11 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 	public DBSessionManager getSessionManager() {
 		return sessionManager;
 	}
+	
+	@Override
+	public QueryInterface getQueryInterface() {
+		return getQueryInterface(QueryInterface.class);
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override

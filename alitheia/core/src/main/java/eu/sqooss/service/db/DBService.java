@@ -262,6 +262,8 @@ public interface DBService extends AlitheiaCoreService {
     
     public DBSessionManager getSessionManager();
     
+    public QueryInterface getQueryInterface();
+    
     public <T> T getQueryInterface(Class<T> queryInterfaceType);
 }
 
