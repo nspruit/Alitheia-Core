@@ -514,13 +514,13 @@ public class ProjectVersion extends DAObject {
      *         or null if there is none.
      */
     public static ProjectVersion getVersionByRevision(StoredProject project, String revisionId) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
    
         Map<String,Object> parameters = new HashMap<String,Object>();
         parameters.put("project", project);
         parameters.put("revisionId", revisionId);
 
-        List<ProjectVersion> versions = dbs.findObjectsByProperties(ProjectVersion.class, parameters);
+        List<ProjectVersion> versions = qi.findObjectsByProperties(ProjectVersion.class, parameters);
         if (versions == null || versions.size() == 0) {
             return null;
         } else {
@@ -547,13 +547,13 @@ public class ProjectVersion extends DAObject {
      */
     public static ProjectVersion getVersionByTimestamp(
             StoredProject project, long timestamp) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
    
         Map<String,Object> parameters = new HashMap<String,Object>();
         parameters.put("project", project);
         parameters.put("timestamp", timestamp);
 
-        List<ProjectVersion> versions = dbs.findObjectsByProperties(
+        List<ProjectVersion> versions = qi.findObjectsByProperties(
                 ProjectVersion.class, parameters);
         if (versions == null || versions.size() == 0) {
             return null;
@@ -876,11 +876,11 @@ public class ProjectVersion extends DAObject {
      * Return true if this version's actions generated a tag.
      */
     public boolean isTag() {
-    	DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
     	Map<String, Object> props = new HashMap<String, Object>();
     	props.put("projectVersion", this);
     	
-    	List<Tag> tags = dbs.findObjectsByProperties(Tag.class, props);
+    	List<Tag> tags = qi.findObjectsByProperties(Tag.class, props);
     	
     	if (tags.isEmpty())
     		return false;

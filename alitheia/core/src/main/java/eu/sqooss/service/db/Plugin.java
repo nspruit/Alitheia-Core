@@ -189,10 +189,10 @@ public class Plugin extends DAObject {
     }
 
     public static List<Plugin> getPluginByName(String name) {
-        DBService db = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         HashMap<String, Object> s = new HashMap<String, Object>();
         s.put("name", name);
-        return db.findObjectsByProperties(Plugin.class, s);
+        return qi.findObjectsByProperties(Plugin.class, s);
     }
         
     /**
@@ -207,10 +207,10 @@ public class Plugin extends DAObject {
      *         otherwise
      */
     public static Plugin getPluginByHashcode(String hashcode) {
-        DBService db = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         HashMap<String, Object> s = new HashMap<String, Object>();
         s.put("hashcode", hashcode);
-        List<Plugin> l = db.findObjectsByProperties(Plugin.class, s); 
+        List<Plugin> l = qi.findObjectsByProperties(Plugin.class, s); 
         if (!l.isEmpty())
             return l.get(0);
         

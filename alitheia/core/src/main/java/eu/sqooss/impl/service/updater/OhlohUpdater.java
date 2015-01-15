@@ -160,7 +160,7 @@ public class OhlohUpdater extends UpdaterBaseJob {
                     od.setUname(uname);
                 } else {
                     od = new OhlohDeveloper(uname, mailhash, id);
-                    dbs.addRecord(od);
+                    dbs.getQueryInterface().addRecord(od);
                 }
             }
             dbs.getSessionManager().commitDBSession();

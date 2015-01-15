@@ -147,20 +147,20 @@ public class Branch extends DAObject {
     }
 	
 	public static Branch fromName(StoredProject sp, String name, boolean create) {
-		DBService db = AlitheiaCore.getInstance().getDBService();
+		HQLQueryInterface hqi = AlitheiaCore.getInstance().getDBService().getQueryInterface(HQLQueryInterface.class);
 		Map<String, Object> params = new HashMap<String, Object>();
 		
 		params.put("name", name);
 		params.put("project", sp);
 		
-		List<Branch> branches = (List<Branch>)db.getQueryInterface(HQLQueryInterface.class).doHQL(qBranchByName, params);
+		List<Branch> branches = (List<Branch>)hqi.doHQL(qBranchByName, params);
 		if (branches.isEmpty()) {
 		    if (!create)
 		        return null;
 		    Branch b = new Branch();
 		    b.setProject(sp);
 		    b.setName(name);
-		    db.addRecord(b);
+		    hqi.addRecord(b);
 		    return fromName(sp, name, false);
 		}
 		
@@ -168,12 +168,12 @@ public class Branch extends DAObject {
 	}
 
     public static String suggestName(StoredProject sp) {
-        DBService db = AlitheiaCore.getInstance().getDBService();
+    	HQLQueryInterface hqi = AlitheiaCore.getInstance().getDBService().getQueryInterface(HQLQueryInterface.class);
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("project", sp);
 
-        List<Long> ids = (List<Long>) db.getQueryInterface(HQLQueryInterface.class).doHQL(qNextSequence, params);
+        List<Long> ids = (List<Long>) hqi.doHQL(qNextSequence, params);
         if (ids.isEmpty())
             return "1";
         else

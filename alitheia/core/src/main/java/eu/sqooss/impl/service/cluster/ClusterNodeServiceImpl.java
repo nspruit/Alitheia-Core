@@ -290,7 +290,7 @@ public class ClusterNodeServiceImpl extends HttpServlet implements ClusterNodeSe
             	    	 break;                   	 
                      }
                      dbs.getSessionManager().startDBSession();
-            		 project = dbs.findObjectById(StoredProject.class, id);
+            		 project = dbs.getQueryInterface().findObjectById(StoredProject.class, id);
             		 dbs.getSessionManager().rollbackDBSession();
             		 if (project==null) {
                	    	content = createXMLResponse(null,"Project with id:" + projectid + " not found", HttpServletResponse.SC_NOT_FOUND);
@@ -434,14 +434,14 @@ public class ClusterNodeServiceImpl extends HttpServlet implements ClusterNodeSe
 			// Check if previously registered in DB
 			Map<String, Object> serverProps = new HashMap<String, Object>(1);
 			serverProps.put("name", localServerName);
-			List<ClusterNode> s = dbs.findObjectsByProperties(
+			List<ClusterNode> s = dbs.getQueryInterface().findObjectsByProperties(
 					ClusterNode.class, serverProps);
 
 			if (s.isEmpty()) {
 				// not registered yet, create a record in DB
 				thisNode = new ClusterNode();
 				thisNode.setName(localServerName);
-				if (!dbs.addRecord(thisNode)) {
+				if (!dbs.getQueryInterface().addRecord(thisNode)) {
 					logger.error("Failed to register ClusterNode <"
 							+ localServerName + ">");
 					dbs.getSessionManager().rollbackDBSession();

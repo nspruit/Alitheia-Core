@@ -231,10 +231,10 @@ public class MailMessage extends DAObject {
      * Return a stored mail message based on messageId
      */
     public static MailMessage getMessageById(String messageId) {
-    	DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
     	Map<String,Object> properties = new HashMap<String, Object>(1);
     	properties.put("messageId", messageId);
-    	List<MailMessage> msgList = dbs.findObjectsByProperties(MailMessage.class, properties);
+    	List<MailMessage> msgList = qi.findObjectsByProperties(MailMessage.class, properties);
     	
     	if ((msgList == null) || (msgList.isEmpty())) {
     	    return null;
@@ -247,10 +247,10 @@ public class MailMessage extends DAObject {
      * Return a stored mail message based on filename
      */
     public static MailMessage getMessageByFileName(String filename) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         Map<String,Object> properties = new HashMap<String, Object>(1);
         properties.put("fileName", filename);
-        List<MailMessage> msgList = dbs.findObjectsByProperties(MailMessage.class, properties);
+        List<MailMessage> msgList = qi.findObjectsByProperties(MailMessage.class, properties);
         
         if ((msgList == null) || (msgList.isEmpty())) {
             return null;

@@ -343,12 +343,12 @@ public class Metric extends DAObject {
 	 *         provided mnemonic
 	 */
 	public static Metric getMetricByMnemonic(String mnem) {
-		DBService dbs = AlitheiaCore.getInstance().getDBService();
+		QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
 
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put("mnemonic", mnem);
 
-		List<Metric> result = dbs.findObjectsByProperties(Metric.class,
+		List<Metric> result = qi.findObjectsByProperties(Metric.class,
 				properties);
 
 		if (result.size() <= 0)

@@ -129,11 +129,11 @@ public class Directory extends DAObject {
      */
     public static synchronized Directory getDirectory(String path, boolean create) {
         
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         Map<String,Object> parameterMap = new HashMap<String,Object>();
         parameterMap.put("path", path);
         
-        List<Directory> dirs = dbs.findObjectsByProperties(Directory.class,
+        List<Directory> dirs = qi.findObjectsByProperties(Directory.class,
                 parameterMap);
         
         /* Dir path in table, return it */
@@ -145,7 +145,7 @@ public class Directory extends DAObject {
             /* Dir path not in table, create it */ 
             Directory d = new Directory();
             d.setPath(path);
-            if (!dbs.addRecord(d)) {
+            if (!qi.addRecord(d)) {
                 return null;
             }
         

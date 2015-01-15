@@ -170,12 +170,12 @@ public class BugSeverity extends DAObject {
      * while modifying the DB.
      */
     public static BugSeverity getBugSeverity(String severity, boolean create) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+        QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         
         Map<String,Object> params = new HashMap<String,Object>();
         params.put("severity", severity);
         
-        List<BugSeverity> st = dbs.findObjectsByProperties(BugSeverity.class,
+        List<BugSeverity> st = qi.findObjectsByProperties(BugSeverity.class,
                 params);
         
         if (!st.isEmpty()) {
@@ -193,7 +193,7 @@ public class BugSeverity extends DAObject {
         BugSeverity bs = new BugSeverity();
         bs.setSeverity(severity);
         
-        if (!dbs.addRecord(bs))
+        if (!qi.addRecord(bs))
             return null;
         
         return bs;

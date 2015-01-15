@@ -235,7 +235,7 @@ public class Developer extends DAObject {
      */
     public static synchronized Developer getDeveloperByEmail(String email,
             StoredProject sp, boolean create){
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	HQLQueryInterface hqi = AlitheiaCore.getInstance().getDBService().getQueryInterface(HQLQueryInterface.class);
         
         String paramProject = "project";
         String paramEmail = "email";
@@ -250,7 +250,7 @@ public class Developer extends DAObject {
         parameterMap.put(paramEmail, email);
         parameterMap.put(paramProject, sp);
         
-        List<Developer> devs = (List<Developer>) dbs.getQueryInterface(HQLQueryInterface.class).doHQL(q.toString(), parameterMap);
+        List<Developer> devs = (List<Developer>) hqi.doHQL(q.toString(), parameterMap);
         
         /* Developer in the DB, return it */
         if ( !devs.isEmpty() )
@@ -300,7 +300,7 @@ public class Developer extends DAObject {
         d.setStoredProject(sp);
         
         /*Failure here probably indicates non-existing StoredProject*/
-        if ( !dbs.addRecord(d) )
+        if ( !hqi.addRecord(d) )
             return null;
         
         d.addAlias(email);
@@ -342,13 +342,13 @@ public class Developer extends DAObject {
     public static synchronized Developer getDeveloperByUsername(String username,
             StoredProject sp, boolean create) {
 		
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
 
         Map<String, Object> parameterMap = new HashMap<String, Object>();
         parameterMap.put("username", username);
         parameterMap.put("storedProject", sp);
 
-        List<Developer> devs = dbs.findObjectsByProperties(Developer.class,
+        List<Developer> devs = qi.findObjectsByProperties(Developer.class,
                                                            parameterMap);
 
         /*
@@ -389,7 +389,7 @@ public class Developer extends DAObject {
         d.setStoredProject(sp);
 
         /*Failure here probably indicates non-existing StoredProject*/
-        if (!dbs.addRecord(d))
+        if (!qi.addRecord(d))
             return null;
 
         return d;
@@ -408,13 +408,13 @@ public class Developer extends DAObject {
     public static synchronized Developer getDeveloperByName(String name, 
             StoredProject sp, boolean create) {
         
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("name", name);
         params.put("storedProject", sp);
 
-        List<Developer> devs = dbs.findObjectsByProperties(Developer.class,params);
+        List<Developer> devs = qi.findObjectsByProperties(Developer.class,params);
         
         /* This code assumes that each name is unique in a project*/
         if (devs.size() > 0)
@@ -425,7 +425,7 @@ public class Developer extends DAObject {
         
         Developer d = new Developer();
         d.setName(name);
-        if (!dbs.addRecord(d))
+        if (!qi.addRecord(d))
             return null;
         
         return d;

@@ -332,7 +332,7 @@ public class StoredProject extends DAObject {
     
     private void updateConfigValue (ConfigOption configOpt, String key, 
     		String value, boolean update) {
-    	DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
     	ConfigurationOption co = null;
     	
     	if (configOpt == null) {
@@ -340,7 +340,7 @@ public class StoredProject extends DAObject {
     	
     		if (co == null) {
     			co = new ConfigurationOption(key, "");
-    			dbs.addRecord(co);
+    			qi.addRecord(co);
     		}
     	} else {
     		co = ConfigurationOption.fromKey(configOpt.getName());
@@ -348,7 +348,7 @@ public class StoredProject extends DAObject {
     		if (co == null) {
     			co = new ConfigurationOption(configOpt.getName(), 
     					configOpt.getDesc());
-    			dbs.addRecord(co);
+    			qi.addRecord(co);
     		}
     	}
     	
@@ -373,11 +373,11 @@ public class StoredProject extends DAObject {
      * @return StoredProject object or null if not found
      */
     public static StoredProject getProjectByName(String name) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
 
         Map<String,Object> parameterMap = new HashMap<String,Object>();
         parameterMap.put("name",name);
-        List<StoredProject> prList = dbs.findObjectsByProperties(StoredProject.class, parameterMap);
+        List<StoredProject> prList = qi.findObjectsByProperties(StoredProject.class, parameterMap);
         return (prList == null || prList.isEmpty()) ? null : prList.get(0);
     }
 

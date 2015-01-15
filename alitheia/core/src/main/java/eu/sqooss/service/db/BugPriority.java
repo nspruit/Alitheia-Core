@@ -160,12 +160,12 @@ public class BugPriority extends DAObject {
      * while modifying the DB.
      */
     public static BugPriority getBugPriority(String priority, boolean create) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+        QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         
         Map<String,Object> params = new HashMap<String,Object>();
         params.put("priority", priority);
         
-        List<BugPriority> st = dbs.findObjectsByProperties(BugPriority.class,
+        List<BugPriority> st = qi.findObjectsByProperties(BugPriority.class,
                 params);
         
         if (!st.isEmpty()) {
@@ -183,7 +183,7 @@ public class BugPriority extends DAObject {
         BugPriority bs = new BugPriority();
         bs.setpriority(priority);
         
-        if (!dbs.addRecord(bs))
+        if (!qi.addRecord(bs))
             return null;
         
         return bs;

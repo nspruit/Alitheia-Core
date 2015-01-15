@@ -368,11 +368,11 @@ public class ProjectFile extends DAObject{
      */
     public Directory toDirectory() {
         if ((isDirectory) && (getFileName() != null)) {
-            DBService dbs = AlitheiaCore.getInstance().getDBService();
+        	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
             Map<String, Object> props = new HashMap<String, Object>();
             props.put("path", getFileName());
             List<Directory> matches =
-                dbs.findObjectsByProperties(Directory.class, props);
+                qi.findObjectsByProperties(Directory.class, props);
             if ((matches != null) && (matches.size() > 0))
                 return matches.get(0);
         }

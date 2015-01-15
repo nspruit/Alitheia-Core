@@ -119,14 +119,15 @@ public class ProjectFileState extends DAObject {
     }
     
     public static ProjectFileState fromStatus(int status) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = dbs.getQueryInterface();
 
         if (!dbs.getSessionManager().isDBSessionActive())
             return null;
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("status", status);
-        List<ProjectFileState> pfs = dbs.findObjectsByProperties(
+        List<ProjectFileState> pfs = qi.findObjectsByProperties(
                 ProjectFileState.class, params);
 
         if (!pfs.isEmpty()) {
@@ -136,7 +137,7 @@ public class ProjectFileState extends DAObject {
         ProjectFileState state = new ProjectFileState();
         state.setStatus(status);
 
-        dbs.addRecord(state);
+        qi.addRecord(state);
 
         return fromStatus(status);
     }

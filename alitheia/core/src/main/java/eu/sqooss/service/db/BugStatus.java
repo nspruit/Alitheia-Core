@@ -168,12 +168,12 @@ public class BugStatus extends DAObject {
      * while modifying the DB.
      */
     public static BugStatus getBugStatus(String status, boolean create) {
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
         
         Map<String,Object> params = new HashMap<String,Object>();
         params.put("status", status);
         
-        List<BugStatus> st = dbs.findObjectsByProperties(BugStatus.class,
+        List<BugStatus> st = qi.findObjectsByProperties(BugStatus.class,
                 params);
         
         if (!st.isEmpty()) {
@@ -191,7 +191,7 @@ public class BugStatus extends DAObject {
         BugStatus bs = new BugStatus();
         bs.setStatus(status);
         
-        if (!dbs.addRecord(bs))
+        if (!qi.addRecord(bs))
             return null;
         
         return bs;

@@ -155,13 +155,13 @@ public class MailingListThread extends DAObject {
      */
     public MailMessage getStartingEmail() {
 
-        DBService dbs = AlitheiaCore.getInstance().getDBService();
+    	QueryInterface qi = AlitheiaCore.getInstance().getDBService().getQueryInterface();
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("thread", this);
         params.put("depth", 0);
         
-        List<MailMessage> mm = dbs.findObjectsByProperties(MailMessage.class,
+        List<MailMessage> mm = qi.findObjectsByProperties(MailMessage.class,
                 params);
 
         if (!mm.isEmpty())
