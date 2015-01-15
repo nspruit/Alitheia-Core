@@ -322,7 +322,7 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 		if (queryInterfaceType.isAssignableFrom(HQLQueryInterfaceImpl.class))
 			return (T) new HQLQueryInterfaceImpl(sessionManager, sessionValidation, sessionFactory, logger);
 		else if(queryInterfaceType.isAssignableFrom(SQLQueryInterfaceImpl.class))
-			return (T) new SQLQueryInterfaceImpl(sessionManager, sessionFactory, logger, getQueryInterface());
+			return (T) new SQLQueryInterfaceImpl(sessionManager, sessionValidation, sessionFactory, getQueryInterface());
 		return null;
 	}
 }
