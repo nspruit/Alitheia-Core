@@ -486,6 +486,12 @@ public interface DBService extends AlitheiaCoreService {
      * This is the prefered method for DAOs to log things.
      */
     public Logger logger();
+    
+    
+    
+    public DBSessionManager getSessionManager();
+    
+    public <T> T getQueryInterface(Class<T> queryInterfaceType);
 }
 
 // vi: ai nosi sw=4 ts=4 expandtab
