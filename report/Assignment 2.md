@@ -46,7 +46,7 @@ As can be seen from the table, none of the implementations of the methods from t
 What did we test, why and how? Explain InMemoryDB, mocking in unit tests, integration tests, etc.
 
 ### Coverage after
-Show coverage image after the tests have been written. Also explain that the tests are sufficient for the refactoring.
+After all tests have been written the test coverage data for the implementations of methods of the DBService interface  was again obtained using JaCoCo. The results are shown in the table below.
 
 | Method                                                                  | Line coverage (%) | Branch coverage (%) |
 | ----------------------------------------------------------------------- | ----------------- | ------------------- |
@@ -76,6 +76,12 @@ Show coverage image after the tests have been written. Also explain that the tes
 | isDBSessionActive                                                       | 98                | 88                  |
 | attachObjectToDBSession                                                 | 77                | 100                 |
 | executeUpdate                                                           | 60                | 83                  |
+
+The table shows that the written tests in general increased the line and branch coverage significantly. Most methods have a line coverage of over 80 percent, which is quite high considering the fact that the other lines mostly deal with handling exceptions caused by errors in the database. For the methods that contain multiple branches, the branch coverage is in general higher than 67%. This percentage is also quite high and the missed branches are again mostly located in the exception handling code dealing with database errors.
+
+The coverage for five of the methods has not changed as we simply have not tested them. We have decided not to test the getInstance and logger methods because these methods are simple getters. We have also decided not to write tests for the two doSQL methods and the callProcedure method, as these methods are deprecated. Moreover, we have also checked the 'Call Hierarchy' of these methods in Eclipse to see whether the methods are actually called by other classes and this is not the case. Therefore we believe it is not worth the effort to write tests for these methods.
+
+
 
 ## Refactoring
 Intro
