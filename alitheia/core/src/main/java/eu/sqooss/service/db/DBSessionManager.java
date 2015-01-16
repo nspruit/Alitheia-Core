@@ -1,12 +1,14 @@
 package eu.sqooss.service.db;
 
+/**
+ * Database service entity that manages the thread-based database sessions. 
+ */
 public interface DBSessionManager {
 
 	/**
      * Starts a new work session with the DBService for the current thread.
      * This method should be called before any other method from DBService, to ensure all resources
      * are properly set up and ready, such as database connection, active transaction...
-     * (the only exception is doSQL, which manages the session internally)
      * Only one session per thread can be active at a time, so calling startDBSession with a
      * previously started session in the same thread has no effect and will assume usage
      * of the existing session. (e.g. if a previous session was not closed properly)

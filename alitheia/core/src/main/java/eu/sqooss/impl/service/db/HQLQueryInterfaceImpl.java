@@ -22,6 +22,9 @@ import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.QueryInterfaceFactory;
 import eu.sqooss.service.logging.Logger;
 
+/**
+ * Default implementation of the doHQL functions and standard query functions.
+ */
 public class HQLQueryInterfaceImpl implements HQLQueryInterface {
 
 	private SessionFactory sessionFactory;

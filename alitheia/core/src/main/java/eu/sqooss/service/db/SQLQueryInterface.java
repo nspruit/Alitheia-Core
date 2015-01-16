@@ -6,6 +6,10 @@ import java.util.Map;
 
 import org.hibernate.QueryException;
 
+/**
+ * NOTE: This QueryInterface is deprecated in favor of HQLQueryInterface.
+ */
+@Deprecated
 public interface SQLQueryInterface extends QueryInterface {
 
 	/**

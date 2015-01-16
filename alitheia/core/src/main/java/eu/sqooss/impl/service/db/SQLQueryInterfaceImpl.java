@@ -20,6 +20,11 @@ import eu.sqooss.service.db.QueryInterface;
 import eu.sqooss.service.db.QueryInterfaceFactory;
 import eu.sqooss.service.db.SQLQueryInterface;
 
+/**
+ * Default implementation of the (deprecated) SQL queries. The standard queries
+ * specified by QueryInterface are not supported through SQL, so these functions
+ * are delegated to the QueryInterface instance provided by DBService.
+ */
 public class SQLQueryInterfaceImpl implements SQLQueryInterface {
 	
 	private DBService dbService;
