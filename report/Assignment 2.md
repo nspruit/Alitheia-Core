@@ -48,6 +48,35 @@ What did we test, why and how? Explain InMemoryDB, mocking in unit tests, integr
 ### Coverage after
 Show coverage image after the tests have been written. Also explain that the tests are sufficient for the refactoring.
 
+| Method                                                                  | Line coverage (%) | Branch coverage (%) |
+| ----------------------------------------------------------------------- | ----------------- | ------------------- |
+| getInstance                                                             | 0                 | 0                   |
+| findObjectById                                                          | 100               | n/a                 |
+| findObjectByIdForUpdate                                                 | 100               | n/a                 | 
+| findObjectsByProperties                                                 | 100               | n/a                 |
+| findObjectsByPropertiesForUpdate                                        | 100               | n/a                 |
+| doSQL(String)                                                           | 0                 | n/a                 |
+| doSQL(String,Map<String,Object>)                                        | 0                 | 0                   |
+| callProcedure                                                           | 0                 | 0                   |
+| doHQL(String)                                                           | 100               | n/a                 |
+| doHQL(String,Map<String,Object>)                                        | 100               | n/a                 |
+| doHQL(String,Map<String,Object>,int)                                    | 100               | n/a                 |
+| doHQL(String,Map<String,Object>,boolean)                                | 100               | n/a                 |
+| doHQL(String,Map<String,Object>,Map<String,Collection>)                 | 100               | n/a                 |
+| doHQL(String,Map<String,Object>,Map<String,Collection>,boolean,int,int) | 81                | 94                  |
+| addRecord                                                               | 100               | n/a                 |
+| deleteRecord                                                            | 100               | n/a                 |
+| addRecords                                                              | 52                | 67                  |
+| deleteRecords                                                           | 51                | 67                  |
+| logger                                                                  | 0                 | n/a                 |
+| startDBSession                                                          | 98                | 83                  |
+| commitDBSession                                                         | 86                | 75                  |
+| rollbackDBSession                                                       | 97                | 75                  |
+| flushDBSession                                                          | 97                | 75                  |
+| isDBSessionActive                                                       | 98                | 88                  |
+| attachObjectToDBSession                                                 | 77                | 100                 |
+| executeUpdate                                                           | 60                | 83                  |
+
 ## Refactoring
 Intro
 
