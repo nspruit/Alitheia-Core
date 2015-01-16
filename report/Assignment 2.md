@@ -2,8 +2,12 @@
 
 Intro
 
-## Chosen violation
-What are the violations and which classes/packages are involved in the violation? Why is it a shortcoming? (See previous report+include numbers). Why do we want to fix this?
+## Chosen violations
+In our Reverse Engineering and Problem Detection Report we explained that de DBService interface is an example of a violation of the Open-Closed Principle as it strongly depends on Hibernate, especially in its doHQL methods. So, if the decision is made to switch to an alternative for Hibernate in the future, this interface and its implementation(s) need to be changed instead of extended. This means that many classes that depend on this interface need to be modified as well, which has a high probability of introducing new bugs which in turn increases the maintenance cost significantly.
+
+Secondly, the DBService interface and therefore also its implementation, DBServiceImpl, also violate the Single Responsibility Principle. The DBService interface violates the SRP as it has more than one responsibility, namely managing database sessions, storing, retrieving and reading database objects and executing custom SQL and HQL queries. This means that when the functionality of one of these responsibilities needs to be changed, the DBService interface and/or its implementation need to be changed. 
+
+Fixing the mentioned violations in this interface and its implementation will significantly reduce maintenance cost, as many classes will have to be changed less often after the refactorings, as there are many dependencies on DBService. The fact that DBServiceImpl is also a large (630 lines of code) and complex (average McCabe complexity of 5.2) class in addition to the reasons mentioned above, make the DBService interface and the DBServiceImpl class good candicates for refactoring. That is why we have decided to tackle the problems in these classes.
 
 ## Testing
 Now that we have chosen to tackle the violations in the DBService(Impl) class, we have to make sure our refactorings are enabled by tests. To do this, we have first collected the test coverage data using the JaCoCo plugin in Maven. Then we have added new tests to incrementally increase the coverage for the public methods in DBService(Impl), as these methods are called by methods in other classes and need therefore be tested well. These two processes as well as the test coverage data after all tests have been written are presented in the following three sections.
@@ -116,7 +120,7 @@ How did we create the new design/updated the old classes (by incrementally getti
 * Also: Update calls to query functions
 
 ## Results
-What are the results of the refactoring? Are the violations gone and why? Try to include hard numbers here. Why is this a good thing for future maintenance? Also explain that and why we are convinced that we haven't introduced new bugs and the system still works the same as before.
+What are the results of the refactoring? Are the violations gone and why? Try to include hard numbers here (complexity?,LCOM?). Why is this a good thing for future maintenance? Also explain that and why we are convinced that we haven't introduced new bugs and the system still works the same as before.
 
 ## Conclusion
 Is this section necessary? Maybe merge with Results section.
