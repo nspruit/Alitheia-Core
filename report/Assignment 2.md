@@ -3,17 +3,17 @@
 Intro
 
 ## Chosen violations
-In our Reverse Engineering and Problem Detection Report we explained that de DBService interface is an example of a violation of the Open-Closed Principle as it strongly depends on Hibernate, especially in its doHQL methods. So, if the decision is made to switch to an alternative for Hibernate in the future, this interface and its implementation(s) need to be changed instead of extended. This means that many classes that depend on this interface need to be modified as well, which has a high probability of introducing new bugs which in turn increases the maintenance cost significantly.
+In our Reverse Engineering and Problem Detection Report we explained that de `DBService` interface is an example of a violation of the Open-Closed Principle as it strongly depends on Hibernate, especially in its `doHQL` methods. So, if the decision is made to switch to an alternative for Hibernate in the future, this interface and its implementation(s) need to be changed instead of extended. This means that many classes that depend on this interface need to be modified as well, which has a high probability of introducing new bugs which in turn increases the maintenance cost significantly.
 
-Secondly, the DBService interface and therefore also its implementation, DBServiceImpl, also violate the Single Responsibility Principle. The DBService interface violates the SRP as it has more than one responsibility, namely managing database sessions, storing, retrieving and reading database objects and executing custom SQL and HQL queries. This means that when the functionality of one of these responsibilities needs to be changed, the DBService interface and/or its implementation need to be changed. 
+Secondly, the `DBService` interface and therefore also its implementation, `DBServiceImpl`, also violate the Single Responsibility Principle. The `DBService` interface violates the SRP as it has more than one responsibility, namely managing database sessions, storing, retrieving and reading database objects and executing custom SQL and HQL queries. This means that when the functionality of one of these responsibilities needs to be changed, the `DBService` interface and/or its implementation need to be changed. 
 
-Fixing the mentioned violations in this interface and its implementation will significantly reduce maintenance cost, as many classes will have to be changed less often after the refactorings, as there are many dependencies on DBService. The fact that DBServiceImpl is also a large (630 lines of code) and complex (average McCabe complexity of 5.2) class in addition to the reasons mentioned above, make the DBService interface and the DBServiceImpl class good candicates for refactoring. That is why we have decided to tackle the problems in these classes.
+Fixing the mentioned violations in this interface and its implementation will significantly reduce maintenance cost, as many classes will have to be changed less often after the refactorings, as there are many dependencies on `DBService`. The fact that `DBServiceImpl` is also a large (630 lines of code) and complex (average McCabe complexity of 5.2) class in addition to the reasons mentioned above, make the `DBService` interface and the `DBServiceImpl` class good candicates for refactoring. That is why we have decided to tackle the problems in these classes.
 
 ## Testing
-Now that we have chosen to tackle the violations in the DBService(Impl) class, we have to make sure our refactorings are enabled by tests. To do this, we have first collected the test coverage data using the JaCoCo plugin in Maven. Then we have added new tests to incrementally increase the coverage for the public methods in DBService(Impl), as these methods are called by methods in other classes and need therefore be tested well. These two processes as well as the test coverage data after all tests have been written are presented in the following three sections.
+Now that we have chosen to tackle the violations in the `DBServiceImpl` class, we have to make sure our refactorings are enabled by tests. To do this, we have first collected the test coverage data using the JaCoCo plugin in Maven. Then we have added new tests to incrementally increase the coverage for the public methods in `DBServiceImpl`, as these methods are called by methods in other classes and need therefore be tested well. These two processes as well as the test coverage data after all tests have been written are presented in the following three sections.
 
 ### Coverage before
-Running the tests with Maven resulted in an HTML coverage report containing all classes in Alitheia-Core. As our refactorings are only concerned with the DBService(Impl) class, the coverage data for DBServiceImpl is most useful. The coverage data for this class is shown in the following table for all the implemented methods of the DBService interface (a value of n/a indicates that the method only has one branch).
+Running the tests with Maven resulted in an HTML coverage report containing all classes in Alitheia-Core. As our refactorings are only concerned with the `DBServiceImpl` class, the coverage data for `DBServiceImpl` is most useful. The coverage data for this class is shown in the following table for all the implemented methods of the `DBService` interface (a value of n/a indicates that the method only has one branch).
 
 | Method                                                                  | Line coverage (%) | Branch coverage (%) |
 | ----------------------------------------------------------------------- | ----------------- | ------------------- |
@@ -44,13 +44,13 @@ Running the tests with Maven resulted in an HTML coverage report containing all 
 | attachObjectToDBSession                                                 | 0                 | 0                   |
 | executeUpdate                                                           | 0                 | 0                   |
 
-As can be seen from the table, none of the implementations of the methods from the DBService interface are tested at all. Therefore we cannot just start refactoring the code, as this will likely introduce new bugs, which will only increase the future maintenance cost instead of reducing it. Therefore it was necessary to first test all these methods by writing unit tests for them. How this was done is explained in the next section.
+As can be seen from the table, none of the implementations of the methods from the `DBService` interface are tested at all. Therefore we cannot just start refactoring the code, as this will likely introduce new bugs, which will only increase the future maintenance cost instead of reducing it. Therefore it was necessary to first test all these methods by writing unit tests for them. How this was done is explained in the next section.
 
 ### Writing tests
 What did we test, why and how? Explain InMemoryDB, mocking in unit tests, integration tests, etc.
 
 ### Coverage after
-After all tests have been written the test coverage data for the implementations of methods of the DBService interface  was again obtained using JaCoCo. The results are shown in the table below.
+After all tests have been written the test coverage data for the implementations of methods of the `DBService` interface  was again obtained using JaCoCo. The results are shown in the table below.
 
 | Method                                                                  | Line coverage (%) | Branch coverage (%) |
 | ----------------------------------------------------------------------- | ----------------- | ------------------- |
@@ -83,7 +83,7 @@ After all tests have been written the test coverage data for the implementations
 
 The table shows that the written tests in general increased the line and branch coverage significantly. Most methods have a line coverage of over 80 percent, which is quite high considering the fact that the other lines mostly deal with handling exceptions caused by errors in the database. For the methods that contain multiple branches, the branch coverage is in general higher than 67%. This percentage is also quite high and the missed branches are again mostly located in the exception handling code dealing with database errors.
 
-The coverage for five of the methods has not changed as we simply have not tested them. We have decided not to test the getInstance and logger methods because these methods are simple getters. We have also decided not to write tests for the two doSQL methods and the callProcedure method, as these methods are deprecated. Moreover, we have also checked the 'Call Hierarchy' of these methods in Eclipse to see whether the methods are actually called by other classes and this is not the case. Therefore we believe it is not worth the effort to write tests for these methods.
+The coverage for five of the methods has not changed as we simply have not tested them. We have decided not to test the `getInstance` and `logger` methods because these methods are simple getters. We have also decided not to write tests for the two `doSQL` methods and the `callProcedure` method, as these methods are deprecated. Moreover, we have also checked the 'Call Hierarchy' of these methods in Eclipse to see whether the methods are actually called by other classes and this is not the case. Therefore we believe it is not worth the effort to write tests for these methods.
 
 
 
