@@ -6,16 +6,82 @@ Intro
 What are the violations and which classes/packages are involved in the violation? Why is it a shortcoming? (See previous report+include numbers). Why do we want to fix this?
 
 ## Testing
-Intro
+Now that we have chosen to tackle the violations in the DBService(Impl) class, we have to make sure our refactorings are enabled by tests. To do this, we have first collected the test coverage data using the JaCoCo plugin in Maven. Then we have added new tests to incrementally increase the coverage for the public methods in DBService(Impl), as these methods are called by methods in other classes and need therefore be tested well. These two processes as well as the test coverage data after all tests have been written are presented in the following three sections.
 
 ### Coverage before
-Show coverage image and explain
+Running the tests with Maven resulted in an HTML coverage report containing all classes in Alitheia-Core. As our refactorings are only concerned with the DBService(Impl) class, the coverage data for DBServiceImpl is most useful. The coverage data for this class is shown in the following table for all the implemented methods of the DBService interface (a value of n/a indicates that the method only has one branch).
+
+| Method                                                                  | Line coverage (%) | Branch coverage (%) |
+| ----------------------------------------------------------------------- | ----------------- | ------------------- |
+| getInstance                                                             | 0                 | 0                   |
+| findObjectById                                                          | 0                 | n/a                 |
+| findObjectByIdForUpdate                                                 | 0                 | n/a                 | 
+| findObjectsByProperties                                                 | 0                 | n/a                 |
+| findObjectsByPropertiesForUpdate                                        | 0                 | n/a                 |
+| doSQL(String)                                                           | 0                 | n/a                 |
+| doSQL(String,Map<String,Object>)                                        | 0                 | 0                   |
+| callProcedure                                                           | 0                 | 0                   |
+| doHQL(String)                                                           | 0                 | n/a                 |
+| doHQL(String,Map<String,Object>)                                        | 0                 | n/a                 |
+| doHQL(String,Map<String,Object>,int)                                    | 0                 | n/a                 |
+| doHQL(String,Map<String,Object>,boolean)                                | 0                 | n/a                 |
+| doHQL(String,Map<String,Object>,Map<String,Collection>)                 | 0                 | n/a                 |
+| doHQL(String,Map<String,Object>,Map<String,Collection>,boolean,int,int) | 0                 | 0                   |
+| addRecord                                                               | 0                 | n/a                 |
+| deleteRecord                                                            | 0                 | n/a                 |
+| addRecords                                                              | 0                 | 0                   |
+| deleteRecords                                                           | 0                 | 0                   |
+| logger                                                                  | 0                 | n/a                 |
+| startDBSession                                                          | 0                 | 0                   |
+| commitDBSession                                                         | 0                 | 0                   |
+| rollbackDBSession                                                       | 0                 | 0                   |
+| flushDBSession                                                          | 0                 | 0                   |
+| isDBSessionActive                                                       | 0                 | 0                   |
+| attachObjectToDBSession                                                 | 0                 | 0                   |
+| executeUpdate                                                           | 0                 | 0                   |
+
+As can be seen from the table, none of the implementations of the methods from the DBService interface are tested at all. Therefore we cannot just start refactoring the code, as this will likely introduce new bugs, which will only increase the future maintenance cost instead of reducing it. Therefore it was necessary to first test all these methods by writing unit tests for them. How this was done is explained in the next section.
 
 ### Writing tests
 What did we test, why and how? Explain InMemoryDB, mocking in unit tests, integration tests, etc.
 
 ### Coverage after
-Show coverage image after the tests have been written. Also explain that the tests are sufficient for the refactoring.
+After all tests have been written the test coverage data for the implementations of methods of the DBService interface  was again obtained using JaCoCo. The results are shown in the table below.
+
+| Method                                                                  | Line coverage (%) | Branch coverage (%) |
+| ----------------------------------------------------------------------- | ----------------- | ------------------- |
+| getInstance                                                             | 0                 | 0                   |
+| findObjectById                                                          | 100               | n/a                 |
+| findObjectByIdForUpdate                                                 | 100               | n/a                 | 
+| findObjectsByProperties                                                 | 100               | n/a                 |
+| findObjectsByPropertiesForUpdate                                        | 100               | n/a                 |
+| doSQL(String)                                                           | 0                 | n/a                 |
+| doSQL(String,Map<String,Object>)                                        | 0                 | 0                   |
+| callProcedure                                                           | 0                 | 0                   |
+| doHQL(String)                                                           | 100               | n/a                 |
+| doHQL(String,Map<String,Object>)                                        | 100               | n/a                 |
+| doHQL(String,Map<String,Object>,int)                                    | 100               | n/a                 |
+| doHQL(String,Map<String,Object>,boolean)                                | 100               | n/a                 |
+| doHQL(String,Map<String,Object>,Map<String,Collection>)                 | 100               | n/a                 |
+| doHQL(String,Map<String,Object>,Map<String,Collection>,boolean,int,int) | 81                | 94                  |
+| addRecord                                                               | 100               | n/a                 |
+| deleteRecord                                                            | 100               | n/a                 |
+| addRecords                                                              | 52                | 67                  |
+| deleteRecords                                                           | 51                | 67                  |
+| logger                                                                  | 0                 | n/a                 |
+| startDBSession                                                          | 98                | 83                  |
+| commitDBSession                                                         | 86                | 75                  |
+| rollbackDBSession                                                       | 97                | 75                  |
+| flushDBSession                                                          | 97                | 75                  |
+| isDBSessionActive                                                       | 98                | 88                  |
+| attachObjectToDBSession                                                 | 77                | 100                 |
+| executeUpdate                                                           | 60                | 83                  |
+
+The table shows that the written tests in general increased the line and branch coverage significantly. Most methods have a line coverage of over 80 percent, which is quite high considering the fact that the other lines mostly deal with handling exceptions caused by errors in the database. For the methods that contain multiple branches, the branch coverage is in general higher than 67%. This percentage is also quite high and the missed branches are again mostly located in the exception handling code dealing with database errors.
+
+The coverage for five of the methods has not changed as we simply have not tested them. We have decided not to test the getInstance and logger methods because these methods are simple getters. We have also decided not to write tests for the two doSQL methods and the callProcedure method, as these methods are deprecated. Moreover, we have also checked the 'Call Hierarchy' of these methods in Eclipse to see whether the methods are actually called by other classes and this is not the case. Therefore we believe it is not worth the effort to write tests for these methods.
+
+
 
 ## Refactoring
 Intro
