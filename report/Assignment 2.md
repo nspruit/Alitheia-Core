@@ -119,11 +119,8 @@ How did we create the new design/updated the old classes (by incrementally getti
 * Also: Update calls to session management methods
 * Also: Update calls to query functions
 
-## Results
-What are the results of the refactoring? Are the violations gone and why? Try to include hard numbers here (complexity?,LCOM?). Why is this a good thing for future maintenance? Also explain that and why we are convinced that we haven't introduced new bugs and the system still works the same as before.
-
 ## Conclusion
-Is this section necessary? Maybe merge with Results section.
+What are the results of the refactoring? Are the violations gone and why? Try to include hard numbers here (complexity?,LCOM?). Why is this a good thing for future maintenance? Also explain that and why we are convinced that we haven't introduced new bugs and the system still works the same as before.
 
 
 
