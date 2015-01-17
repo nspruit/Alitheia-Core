@@ -1,6 +1,6 @@
 # Assignment 2 - Testing and Refactoring Report
 
-Intro
+In our Reverse Engineering and Problem Detection report Alitheia-Core was examined and several violations of class and package design principles were discovered. To reduce future maintenance cost and to improve the project's quality, it is useful to refactor the code to fix significant design principle violations. Therefore, this report shows what, why and how we removed some design principle violations by refactoring a part of the code. First, we will explain which class(es) we want to refactor and why. Then we will explain how we tested the current code to ensure the refactorings will not introduce new bugs in the system. Finally, our refactorings are explained in detail and a conclusion of our efforts is given.
 
 ## Chosen violations
 In our Reverse Engineering and Problem Detection Report we explained that de `DBService` interface is an example of a violation of the Open-Closed Principle (OCP) as it strongly depends on Hibernate, especially in its `doHQL` methods. So, if the decision is made to switch to an alternative for Hibernate in the future, this interface and its implementation(s) need to be changed instead of extended. This means that many classes that depend on this interface need to be modified as well, which has a high probability of introducing new bugs which in turn increases the maintenance cost significantly.
@@ -119,11 +119,8 @@ After all the classes implementing the new interface were finished, we have remo
 
 Finally, after all tests passed, we had to fix the remaining errors in the core project. These errors were all caused by the changes to the `DBService` interface. This meant that we needed to update all method calls to the methods of the 'old' `DBService` interface to the new design. Then we have imported all other projects of Alitheia-Core into Eclipse and fixed the errors in them as well by updating some method calls. After this all tests still passed and running `mvn clean install` resulted in a successful build. This, in addition to the test coverage results explained above, convinced us that our refactorings did not break the system or introduced new bugs.
 
-## Results
-What are the results of the refactoring? Are the violations gone and why? Try to include hard numbers here (complexity?,LCOM?). Why is this a good thing for future maintenance? Also explain that and why we are convinced that we haven't introduced new bugs and the system still works the same as before.
-
 ## Conclusion
-Is this section necessary? Maybe merge with Results section.
+What are the results of the refactoring? Are the violations gone and why? Try to include hard numbers here (complexity?,LCOM?). Why is this a good thing for future maintenance? Also explain that and why we are convinced that we haven't introduced new bugs and the system still works the same as before.
 
 
 
