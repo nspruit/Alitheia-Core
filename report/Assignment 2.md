@@ -106,18 +106,11 @@ Explain how we updated the written tests according to the new design. Explain th
 * MetricTest
 
 ### Implementing the new design
-How did we create the new design/updated the old classes (by incrementally getting more tests to pass)? Also indicate this for each of the following actions:
+To implement the new design we have first created the new interfaces `DBSessionManager`, `(HQL/SQL)QueryInterface` and `QueryInterfaceFactory`. Then we have added the new getters to `DBService` and implemented them in `DBServiceImpl`. Then we have implemented the new interfaces one by one until all their tests passed. We have largely done this by extracting the implementations from `DBServiceImpl` to their new location. Based on the errors in Eclipse we have then added the required fields to the implementation classes and created a constructor based on this. 
 
-* Create DBSessionManager
-* Create DBSessionManagerImpl
-* Create QueryInterface, HQLQueryInterface and SQLQueryInterface
-* Create HQLQueryInterfaceImpl
-* Create SQLQueryInterfaceImpl 
-* Update DBService
-* Update DBServiceImpl
-* Create DBSessionValidation to get rid of duplicate logging code
-* Also: Update calls to session management methods
-* Also: Update calls to query functions
+After all the classes implementing the new interface were finished, we have removed the methods from `DBService` and `DBServiceImpl` that were no longer used to clean up these classes. Then we found out that most of the implementations of the new interfaces used the same two logging functions and one function to check the status of the database session. As we did not want to have these methods implemented multiple times and therefore create duplicate code, we have created a new interface for these methods called `DBSessionValidation` that is implemented once by `DBSessionManagerImpl`.
+
+Finally, after all tests passed, we had to fix the remaining errors in the core project. These errors were all caused by the changes to the `DBService` interface. This meant that we needed to update all method calls to the methods of the 'old' `DBService` interface to the new design. Then we have imported all other projects of Alitheia-Core into Eclipse and fixed the errors in them as well by updating some method calls. After this all tests still passed and running `mvn clean install` resulted in a successful build. This, in addition to the test coverage results explained above, convinced us that our refactorings did not break the system or introduced new bugs.
 
 ## Results
 What are the results of the refactoring? Are the violations gone and why? Try to include hard numbers here (complexity?,LCOM?). Why is this a good thing for future maintenance? Also explain that and why we are convinced that we haven't introduced new bugs and the system still works the same as before.
