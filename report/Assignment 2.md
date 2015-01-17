@@ -85,10 +85,8 @@ The table shows that the written tests in general increased the line and branch 
 
 The coverage for five of the methods has not changed as we simply have not tested them. We have decided not to test the `getInstance` and `logger` methods because these methods are simple getters. We have also decided not to write tests for the two `doSQL` methods and the `callProcedure` method, as these methods are deprecated. Moreover, we have also checked the 'Call Hierarchy' of these methods in Eclipse to see whether the methods are actually called by other classes and this is not the case. Therefore we believe it is not worth the effort to write tests for these methods.
 
-
-
 ## Refactoring
-Intro
+Now that the test harness is in place, the actual refactorings to the `DBService` interface and its implementation in `DBServiceImpl` could safely be done. For this we have first created a new design, then we have updated the tests according to this new design and then the refactorings were implemented. These processes will be examined in the following three sections.
 
 ### Suggested design
 Show UML diagram and explain. Also explain why this solves the violations, has a low probability of introducing new bugs, etc. 
