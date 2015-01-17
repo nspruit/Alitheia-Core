@@ -119,8 +119,21 @@ After all the classes implementing the new interface were finished, we have remo
 
 Finally, after all tests passed, we had to fix the remaining errors in the core project. These errors were all caused by the changes to the `DBService` interface. This meant that we needed to update all method calls to the methods of the 'old' `DBService` interface to the new design. Then we have imported all other projects of Alitheia-Core into Eclipse and fixed the errors in them as well by updating some method calls. After this all tests still passed and running `mvn clean install` resulted in a successful build. This, in addition to the test coverage results explained above, convinced us that our refactorings did not break the system or introduced new bugs.
 
+## Results
+
+We set out to fix two major design principle violations in the `DBService` interface: the multiple responsibilities and consequently the unmanagable size of the `DBServiceImpl` class (SRP violation), and the strong link between the DBService and the specific database technology being used (OCP violation). Through our efforts in redesigning and refactoring the `DBService` interface, we have solved the SRP violation by dividing the interface into multiple focussed interfaces. In the table below we present several metrices (obtained using the Eclipse metrics plugin) that demonstrate the necessity of this change and the effects it had. Before the change, the `DBServiceImpl` class had a LCOM of 0.661 (lower is better, and a value near one means low cohesion and often multiple responsibilities). After the change, three additional interfaces were created with a LCOM no higher than 0.370, which suggests that each of the new interfaces have high cohesion and are thus more specific in their responsibility. The new DBServiceImpl has a higher LCOM (0.722), which is common for classes that have mostly getters. Note also that the methods that previously existed only in `DBServiceImpl` are now spread out over four different classes (with the addition of several new methods). The lack of a significant imbalance in the size of the new classes suggests that there were indeed several sizable components in the original `DBService` design that could be extracted.
+
+| Class                  | Lines of Code | # Methods | Lack of Cohesion of Methods |
+| ---------------------- | ------------- | --------- | --------------------------- |
+| DBServiceImpl (before) | 630           | 37        | 0.661                       |
+| DBServiceImpl (after)  | 268           | 14        | 0.722                       |
+| DBSessionManagerImpl   | 192           | 10        | 0.370                       |
+| HQLQueryInterfaceImpl  | 227           | 19        | 0.188                       |
+| SQLQueryInterfaceImpl  | 154           | 14        | 0.233                       |
+
+The second violation, OCP, has been solved by isolating the interaction with Hibernate in the `HQLQueryInterface`. In the previous design the Hibernate-specific functionality, such as executing HQL queries, was embedded in the `DBService` interface and it was not possible to choose a different database technology without changing `DBService`. The solution we choose was to have the `DBService` and all interfaces it depends on (such as `QueryInterface`) only expose database-technology-agnostic methods, while still providing access to the HQL methods through `HQLQueryInterface` to ensure compatibility with existing code. Further improvements could be made by phasing out the use of HQLQueryInterface in favor of a new interface (e.g., a "fluent" API for most common queries). However, this was outside the scope of our reengineering efforts.
+
 ## Conclusion
-What are the results of the refactoring? Are the violations gone and why? Try to include hard numbers here (complexity?,LCOM?). Why is this a good thing for future maintenance? Also explain that and why we are convinced that we haven't introduced new bugs and the system still works the same as before.
 
-
+Through reengineering the database service of Alitheia-core we have taken away two design violations that pose a risk to the maintainability of Alitheia-core. By splitting the database service into smaller, single-responsibility entities, it will be easier in the future to make isolated changes. In addition, we have removed the strong connection between the public API of the database service and the specific database technology used as a back end. This facilitates a possible future decision to use a different storage system by reducing the amount of code that depends on the existing technology.
 
