@@ -3,9 +3,9 @@
 Intro
 
 ## Chosen violations
-In our Reverse Engineering and Problem Detection Report we explained that de `DBService` interface is an example of a violation of the Open-Closed Principle as it strongly depends on Hibernate, especially in its `doHQL` methods. So, if the decision is made to switch to an alternative for Hibernate in the future, this interface and its implementation(s) need to be changed instead of extended. This means that many classes that depend on this interface need to be modified as well, which has a high probability of introducing new bugs which in turn increases the maintenance cost significantly.
+In our Reverse Engineering and Problem Detection Report we explained that de `DBService` interface is an example of a violation of the Open-Closed Principle (OCP) as it strongly depends on Hibernate, especially in its `doHQL` methods. So, if the decision is made to switch to an alternative for Hibernate in the future, this interface and its implementation(s) need to be changed instead of extended. This means that many classes that depend on this interface need to be modified as well, which has a high probability of introducing new bugs which in turn increases the maintenance cost significantly.
 
-Secondly, the `DBService` interface and therefore also its implementation, `DBServiceImpl`, also violate the Single Responsibility Principle. The `DBService` interface violates the SRP as it has more than one responsibility, namely managing database sessions, storing, retrieving and reading database objects and executing custom SQL and HQL queries. This means that when the functionality of one of these responsibilities needs to be changed, the `DBService` interface and/or its implementation need to be changed. 
+Secondly, the `DBService` interface and therefore also its implementation, `DBServiceImpl`, also violate the Single Responsibility Principle (SRP). The `DBService` interface violates the SRP as it has more than one responsibility, namely managing database sessions, storing, retrieving and reading database objects and executing custom SQL and HQL queries. This means that when the functionality of one of these responsibilities needs to be changed, the `DBService` interface and/or its implementation need to be changed. 
 
 Fixing the mentioned violations in this interface and its implementation will significantly reduce maintenance cost, as many classes will have to be changed less often after the refactorings, as there are many dependencies on `DBService`. The fact that `DBServiceImpl` is also a large (630 lines of code) and complex (average McCabe complexity of 5.2) class in addition to the reasons mentioned above, make the `DBService` interface and the `DBServiceImpl` class good candicates for refactoring. That is why we have decided to tackle the problems in these classes.
 
@@ -94,10 +94,16 @@ The table shows that the written tests in general increased the line and branch 
 The coverage for five of the methods has not changed as we simply have not tested them. We have decided not to test the `getInstance` and `logger` methods because these methods are simple getters. We have also decided not to write tests for the two `doSQL` methods and the `callProcedure` method, as these methods are deprecated. Moreover, we have also checked the 'Call Hierarchy' of these methods in Eclipse to see whether the methods are actually called by other classes and this is not the case. Therefore we believe it is not worth the effort to write tests for these methods.
 
 ## Refactoring
-Intro
+Now that the test harness is in place, the actual refactorings to the `DBService` interface and its implementation in `DBServiceImpl` could safely be done. For this we have first created a new design, then we have updated the tests according to this new design and then the refactorings were implemented. These processes will be examined in the following three sections.
 
 ### Suggested design
-Show UML diagram and explain. Also explain why this solves the violations, has a low probability of introducing new bugs, etc. 
+To resolve the SRP violation in the `DBService` class we have to make sure this interface has only one responsibility which is to manage the startup and shutdown process of the database service. This means that the other responsibilities this class currently has, managing database sessions and exposing methods to query the database, need to be extracted to their own class. Therefore we have decided to extract all methods related to session management to a new interface `DBSessionManager` which is to be implemented in `DBSessionManagerImpl`. 
+
+Next, the methods related to querying the database needed to be extracted. However, we did not extract all these methods to a single interface, as the OCP violation would then remain. Therefore we have decided to create an interface for all basic [CRUD](http://en.wikipedia.org/wiki/Create,_read,_update_and_delete) methods that can be extended to offer extended functionality. This resulted in the `QueryInterface` interface that is extended twice to offer the extended functionality specific to HQL (in `HQLQueryInterface`) and SQL (in `SQLQueryInterface`). In this way the OCP violation is also solved, as there is no longer a hard dependency on Hibernate in the `DBService` and `QueryInterface` interfaces. 
+
+Finally, to provide a better, more encapsulated way of instantiating the query interfaces, we have also added an interface called `QueryInterfaceFactory`. The entire new design we created, including the methods contained in each interface and the relations between the classes and interfaces, is summarized in the UML class diagram shown below.
+
+![UML class diagram](images/UML_diagram_new_design.png)
 
 ### Updating the tests
 Due to the initial structuring of test cases, very little needed to be changed to succesfully test the reengineered interfaces. The `DBTransactionTest` class still contains transaction and session related tests, which coincides with the new `DBSessionManager` interface. In addition, the tests for query methods were already separated into multiple test files.
