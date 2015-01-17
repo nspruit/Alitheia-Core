@@ -47,7 +47,15 @@ Running the tests with Maven resulted in an HTML coverage report containing all 
 As can be seen from the table, none of the implementations of the methods from the `DBService` interface are tested at all. Therefore we cannot just start refactoring the code, as this will likely introduce new bugs, which will only increase the future maintenance cost instead of reducing it. Therefore it was necessary to first test all these methods by writing unit tests for them. How this was done is explained in the next section.
 
 ### Writing tests
-What did we test, why and how? Explain InMemoryDB, mocking in unit tests, integration tests, etc.
+To keep the test suite organized, we have decided to create a test class for each responsibility of the `DBService` interface. Therefore we created a test class for the session management methods, one for the basic query methods and one class for the HQL methods. Besides we have also decided to create some integration tests to make sure the functionality of the classes depending on `DBService` remains the same after the refactoring. All of these test classes will be examined one by one, but first we will explain some changes required for testing the `DBServiceImpl`.
+
+We first created a new subclass of `DAObject` called `DBObject` with only an Id and Name field to enable testing adding, getting, deleting and updating records in isolation, as this new subclass does not require much external dependencies contrary to the exising subclasses of `DAObject`. As the services of Alitheia-Core are not initialized when you run the tests, we could not simply use the database that is created when `DBService` is started to test the query methods. However, we wanted to use a real database for these tests, as we would have to mock an enormous amount of objects otherwise. Therefore we have created the class `InMemoryDatabase` that creates a simple in-memory H2 database and has some methods for session management and some getters. For this we also added a method called `prepareForTest` to `DBServiceImpl` that initializes some important fields of the class so that the others methods of the class can actually be tested.
+
+After all required objects were set-up for testing, the test class `DBTransactionTest` was written to test the methods related to session management. This class contains tests for the following methods of the `DBService`: `startDBSession`, `commitDBSession`, `isDBSessionActive`, `rollbackDBSession`, `flushDBSession` and `attachObjectToDBSession`. For each of these methods at least three tests were created to not only test the method's behaviour in 'normal' conditions, but also to test exceptional execution, for instance when there is no active database session when you call `rollbackDBSession`. In this test class [Mockito](http://site.mockito.org/) was used a lot to mock the dependencies on Hibernate's Session and SessionFactory classes and to verify whether the correct methods of these objects were invoked by the method under test. Also [Hamcrest](http://hamcrest.org/JavaHamcrest/) is used for extensive, readable test assertions.
+
+To test the basic query methods of the `DBService` interface, the test class `DBQueryTest` was created. This class contains tests for the following methods: `addRecord`, `deleteRecord`, `findObjectById`, `findObjectByIdForUpdate`, `findObjectsByProperties` and `findObjectsByPropertiesForUpdate`. These methods are tested extensively as they are in our opinion core functionality of the `DBService`. In addition, these tests are "stable" in that they are not likely to change if the database technology is replaced in the future, which means that they are highly valuable for future refactoring efforts. In this class the `InMemoryDatabase` is used extensively, as that is the place were the objects are actually stored and retrieved from. 
+
+Next, the class `DBHQLQueryTest` was written to test the custom queries that can be done with the `doHQL` methods and the `executeUpdate` method. For these tests the in-memory H2 database was again used as database backend. Finally, we added several integration tests by testing extensively the interaction of several `DAObject` subclasses with `DBService`. Although we could not feasibly cover all uses of the `DBService` with tests, we cover several to ensure that not only the `DBService` is working as expected, but also that the invocation of the `DBService` is correctly refactored and to build confidence in the success of our reengineering efforts.
 
 ### Coverage after
 After all tests have been written the test coverage data for the implementations of methods of the `DBService` interface  was again obtained using JaCoCo. The results are shown in the table below.
@@ -85,8 +93,6 @@ The table shows that the written tests in general increased the line and branch 
 
 The coverage for five of the methods has not changed as we simply have not tested them. We have decided not to test the `getInstance` and `logger` methods because these methods are simple getters. We have also decided not to write tests for the two `doSQL` methods and the `callProcedure` method, as these methods are deprecated. Moreover, we have also checked the 'Call Hierarchy' of these methods in Eclipse to see whether the methods are actually called by other classes and this is not the case. Therefore we believe it is not worth the effort to write tests for these methods.
 
-
-
 ## Refactoring
 Intro
 
@@ -94,16 +100,11 @@ Intro
 Show UML diagram and explain. Also explain why this solves the violations, has a low probability of introducing new bugs, etc. 
 
 ### Updating the tests
-Explain how we updated the written tests according to the new design. Explain this separately for each of the following test classes:
+Due to the initial structuring of test cases, very little needed to be changed to succesfully test the reengineered interfaces. The `DBTransactionTest` class still contains transaction and session related tests, which coincides with the new `DBSessionManager` interface. In addition, the tests for query methods were already separated into multiple test files.
 
-* DBObject
-* DBTransactionTest
-* HQLQueryInterfaceTest
-* HQLQueryInterfaceImplTest
-* InMemoryDatabase
-* QueryInterfaceTest
-* ConfigurationOptionTest
-* MetricTest
+To facilitate future extension and testing of the `QueryInterface`, we redesigned the test suite to distinguish between testing interfaces (`QueryInterface`, `HQLQueryInterface`) and testing implementations (`HQLQueryInterfaceImpl`). To do so, we created abstract `QueryInterfaceTest` and `HQLQueryInterfaceTest` classes which test the functionality of thei respective interfaces. The `HQLQueryInterfaceImplTest` class extends the previously mentioned classes by providing an instance of `HQLQueryInterfaceImpl` to test. Similarly, future reimplementations of `QueryInterface` can reuse the existing test suites without duplicating code.
+
+Further, additional tests for `DBSessionImpl` were added to test the newly added getters for `DBSessionManager` and `QueryInterface`s. Through these tests we verify that new `QueryInterface`s and their respective factories can be registered and retrieved, and also that all existing `QueryInterface`s are available by default.
 
 ### Implementing the new design
 How did we create the new design/updated the old classes (by incrementally getting more tests to pass)? Also indicate this for each of the following actions:
