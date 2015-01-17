@@ -1,6 +1,6 @@
 # Assignment 2 - Testing and Refactoring Report
 
-Intro
+In our Reverse Engineering and Problem Detection report Alitheia-Core was examined and several violations of class and package design principles were discovered. To reduce future maintenance cost and to improve the project's quality, it is useful to refactor the code to fix significant design principle violations. Therefore, this report shows what, why and how we removed some design principle violations by refactoring a part of the code. First, we will explain which class(es) we want to refactor and why. Then we will explain how we tested the current code to ensure the refactorings will not introduce new bugs in the system. Finally, our refactorings are explained in detail and a conclusion of our efforts is given.
 
 ## Chosen violations
 In our Reverse Engineering and Problem Detection Report we explained that de `DBService` interface is an example of a violation of the Open-Closed Principle as it strongly depends on Hibernate, especially in its `doHQL` methods. So, if the decision is made to switch to an alternative for Hibernate in the future, this interface and its implementation(s) need to be changed instead of extended. This means that many classes that depend on this interface need to be modified as well, which has a high probability of introducing new bugs which in turn increases the maintenance cost significantly.
