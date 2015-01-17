@@ -1,6 +1,6 @@
 # Assignment 2 - Testing and Refactoring Report
 
-Intro
+TODO: Intro
 
 ## Chosen violations
 In our Reverse Engineering and Problem Detection Report we explained that de `DBService` interface is an example of a violation of the Open-Closed Principle as it strongly depends on Hibernate, especially in its `doHQL` methods. So, if the decision is made to switch to an alternative for Hibernate in the future, this interface and its implementation(s) need to be changed instead of extended. This means that many classes that depend on this interface need to be modified as well, which has a high probability of introducing new bugs which in turn increases the maintenance cost significantly.
@@ -88,9 +88,9 @@ The coverage for five of the methods has not changed as we simply have not teste
 
 
 ## Refactoring
-Intro
+TODO: Intro
 
-### Suggested design
+### TODO: Suggested design
 Show UML diagram and explain. Also explain why this solves the violations, has a low probability of introducing new bugs, etc. 
 
 ### Updating the tests
@@ -105,7 +105,7 @@ Explain how we updated the written tests according to the new design. Explain th
 * ConfigurationOptionTest
 * MetricTest
 
-### Implementing the new design
+### TODO: Implementing the new design
 How did we create the new design/updated the old classes (by incrementally getting more tests to pass)? Also indicate this for each of the following actions:
 
 * Create DBSessionManager
@@ -119,10 +119,10 @@ How did we create the new design/updated the old classes (by incrementally getti
 * Also: Update calls to session management methods
 * Also: Update calls to query functions
 
-## Results
+## TODO: Results
 What are the results of the refactoring? Are the violations gone and why? Try to include hard numbers here (complexity?,LCOM?). Why is this a good thing for future maintenance? Also explain that and why we are convinced that we haven't introduced new bugs and the system still works the same as before.
 
-## Conclusion
+## TODO: Conclusion
 Is this section necessary? Maybe merge with Results section.
 
 
