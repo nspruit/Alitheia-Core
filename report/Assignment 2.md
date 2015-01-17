@@ -100,16 +100,12 @@ TODO: Intro
 Show UML diagram and explain. Also explain why this solves the violations, has a low probability of introducing new bugs, etc. 
 
 ### Updating the tests
-Explain how we updated the written tests according to the new design. Explain this separately for each of the following test classes:
 
-* DBObject
-* DBTransactionTest
-* HQLQueryInterfaceTest
-* HQLQueryInterfaceImplTest
-* InMemoryDatabase
-* QueryInterfaceTest
-* ConfigurationOptionTest
-* MetricTest
+Due to the initial structuring of test cases, very little needed to be changed to succesfully test the reengineered interfaces. The `DBTransactionTest` class still contains transaction and session related tests, which coincides with the new `DBSessionManager` interface. In addition, the tests for query methods were already separated into multiple test files.
+
+To facilitate future extension and testing of the `QueryInterface`, we redesigned the test suite to distinguish between testing interfaces (`QueryInterface`, `HQLQueryInterface`) and testing implementations (`HQLQueryInterfaceImpl`). To do so, we created abstract `QueryInterfaceTest` and `HQLQueryInterfaceTest` classes which test the functionality of thei respective interfaces. The `HQLQueryInterfaceImplTest` class extends the previously mentioned classes by providing an instance of `HQLQueryInterfaceImpl` to test. Similarly, future reimplementations of `QueryInterface` can reuse the existing test suites without duplicating code.
+
+Further, additional tests for `DBSessionImpl` were added to test the newly added getters for `DBSessionManager` and `QueryInterface`s. Through these tests we verify that new `QueryInterface`s and their respective factories can be registered and retrieved, and also that all existing `QueryInterface`s are available by default.
 
 ### TODO: Implementing the new design
 How did we create the new design/updated the old classes (by incrementally getting more tests to pass)? Also indicate this for each of the following actions:
