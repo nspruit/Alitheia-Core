@@ -13,23 +13,33 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import eu.sqooss.service.db.DAObject;
+import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.DBSessionManager;
+import eu.sqooss.service.db.DBSessionValidation;
 import eu.sqooss.service.db.QueryInterface;
+import eu.sqooss.service.db.QueryInterfaceFactory;
 import eu.sqooss.service.db.SQLQueryInterface;
 
+/**
+ * Default implementation of the (deprecated) SQL queries. The standard queries
+ * specified by QueryInterface are not supported through SQL, so these functions
+ * are delegated to the QueryInterface instance provided by DBService.
+ */
 public class SQLQueryInterfaceImpl implements SQLQueryInterface {
 	
+	private DBService dbService;
 	private QueryInterface qi;
 	private DBSessionManager sessionManager;
 	private DBSessionValidation sessionValidation;
 	private SessionFactory sessionFactory;
 	
-	public SQLQueryInterfaceImpl(DBSessionManager sesMan, DBSessionValidation sesVal,
-			SessionFactory sesFac, QueryInterface qi){
-		this.sessionManager = sesMan;
+	public SQLQueryInterfaceImpl(DBService dbService, DBSessionValidation sesVal,
+			SessionFactory sesFac) {
+		this.sessionManager = dbService.getSessionManager();
 		this.sessionValidation = sesVal;
 		this.sessionFactory = sesFac;
-		this.qi = qi;
+		this.dbService = dbService;
+		this.qi = null;
 	}
 
 	@Override
@@ -113,45 +123,59 @@ public class SQLQueryInterfaceImpl implements SQLQueryInterface {
 
 	@Override
 	public <T extends DAObject> T findObjectById(Class<T> daoClass, long id) {
-		return qi.findObjectById(daoClass, id);
+		return getQI().findObjectById(daoClass, id);
 	}
 
 	@Override
 	public <T extends DAObject> T findObjectByIdForUpdate(Class<T> daoClass,
 			long id) {
-		return qi.findObjectByIdForUpdate(daoClass, id);
+		return getQI().findObjectByIdForUpdate(daoClass, id);
 	}
 
 	@Override
 	public <T extends DAObject> List<T> findObjectsByProperties(
 			Class<T> daoClass, Map<String, Object> properties) {
-		return qi.findObjectsByProperties(daoClass, properties);
+		return getQI().findObjectsByProperties(daoClass, properties);
 	}
 
 	@Override
 	public <T extends DAObject> List<T> findObjectsByPropertiesForUpdate(
 			Class<T> daoClass, Map<String, Object> properties) {
-		return qi.findObjectsByPropertiesForUpdate(daoClass, properties);
+		return getQI().findObjectsByPropertiesForUpdate(daoClass, properties);
 	}
 
 	@Override
 	public boolean addRecord(DAObject record) {
-		return qi.addRecord(record);
+		return getQI().addRecord(record);
 	}
 
 	@Override
 	public <T extends DAObject> boolean addRecords(List<T> records) {
-		return qi.addRecords(records);
+		return getQI().addRecords(records);
 	}
 
 	@Override
 	public boolean deleteRecord(DAObject record) {
-		return qi.deleteRecord(record);
+		return getQI().deleteRecord(record);
 	}
 
 	@Override
 	public <T extends DAObject> boolean deleteRecords(List<T> records) {
-		return qi.deleteRecords(records);
+		return getQI().deleteRecords(records);
+	}
+	
+	private QueryInterface getQI() {
+		if (qi == null)
+			qi = dbService.getQueryInterface();
+		return qi;
 	}
 
+	public static class Factory implements QueryInterfaceFactory<SQLQueryInterface> {
+
+		@Override
+		public SQLQueryInterface build(DBService dbService,	SessionFactory sessionFactory,
+				DBSessionValidation sessionValidation) {
+			return new SQLQueryInterfaceImpl(dbService, sessionValidation, sessionFactory);
+		}
+    }
 }

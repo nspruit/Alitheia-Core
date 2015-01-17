@@ -15,10 +15,16 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import eu.sqooss.service.db.DAObject;
+import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.DBSessionManager;
+import eu.sqooss.service.db.DBSessionValidation;
 import eu.sqooss.service.db.HQLQueryInterface;
+import eu.sqooss.service.db.QueryInterfaceFactory;
 import eu.sqooss.service.logging.Logger;
 
+/**
+ * Default implementation of the doHQL functions and standard query functions.
+ */
 public class HQLQueryInterfaceImpl implements HQLQueryInterface {
 
 	private SessionFactory sessionFactory;
@@ -253,5 +259,15 @@ public class HQLQueryInterfaceImpl implements HQLQueryInterface {
             sessionValidation.logExceptionAndTerminateSession(ebis);
             throw ebis;
         }
+    }
+    
+    public static class Factory implements QueryInterfaceFactory<HQLQueryInterface> {
+
+		@Override
+		public HQLQueryInterface build(DBService dbService,	SessionFactory sessionFactory,
+				DBSessionValidation sessionValidation) {
+			return new HQLQueryInterfaceImpl(dbService.getSessionManager(),
+					sessionValidation, sessionFactory, dbService.logger());
+		}
     }
 }

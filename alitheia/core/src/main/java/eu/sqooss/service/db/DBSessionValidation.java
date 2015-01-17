@@ -1,4 +1,4 @@
-package eu.sqooss.impl.service.db;
+package eu.sqooss.service.db;
 
 import java.sql.SQLException;
 
@@ -15,12 +15,15 @@ public interface DBSessionValidation {
     public boolean checkSession();
     
     /**
+     * Logs a database-related exception and cleans up the database session of the
+     * current thread, if it exists.
      * 
      * @param e an exception triggering the termination of the active session
      */
     public void logExceptionAndTerminateSession(Exception e);
     
     /**
+     * Logs an SQL exception.
      * 
      * @param e the exception to be logged
      */

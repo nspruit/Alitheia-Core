@@ -57,7 +57,11 @@ import org.osgi.framework.BundleContext;
 import eu.sqooss.core.AlitheiaCoreService;
 import eu.sqooss.service.db.DBService;
 import eu.sqooss.service.db.DBSessionManager;
+import eu.sqooss.service.db.DBSessionValidation;
+import eu.sqooss.service.db.HQLQueryInterface;
 import eu.sqooss.service.db.QueryInterface;
+import eu.sqooss.service.db.QueryInterfaceFactory;
+import eu.sqooss.service.db.SQLQueryInterface;
 import eu.sqooss.service.logging.Logger;
 import eu.sqooss.service.util.URIUtills;
 
@@ -120,6 +124,10 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
     private Properties conProp = new Properties();
     private DBSessionManager sessionManager = null;
     private DBSessionValidation sessionValidation = null;
+    
+    private Map<Class<? extends QueryInterface>, Class<? extends QueryInterfaceFactory<?>>>
+			queryInterfaceFactories = new HashMap<>();
+    private Map<Class<? extends QueryInterface>, QueryInterface> queryInterfaces = new HashMap<>();
     
     private boolean getJDBCConnection() {
         String driver = conProp.getProperty("hibernate.connection.driver_class");
@@ -236,12 +244,19 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
         return true;
     }
     
+    private void preloadFactories() {
+    	registerQueryInterface(QueryInterface.class, HQLQueryInterfaceImpl.Factory.class);
+    	registerQueryInterface(HQLQueryInterface.class, HQLQueryInterfaceImpl.Factory.class);
+    	registerQueryInterface(SQLQueryInterface.class, SQLQueryInterfaceImpl.Factory.class);
+    }
+    
     public DBServiceImpl() { }
     
     public DBServiceImpl(Properties p, URL configFileURL, Logger l) { 
         this.conProp = p;
         this.logger = l;
         initHibernate(configFileURL);
+        preloadFactories();
         isInitialised.compareAndSet(false, true);
         instance = this;
     }
@@ -294,6 +309,52 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
         this.logger = l;
 	}
 	
+	@Override
+	public DBSessionManager getSessionManager() {
+		return sessionManager;
+	}
+	
+	@Override
+	public QueryInterface getQueryInterface() {
+		return getQueryInterface(QueryInterface.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends QueryInterface> T getQueryInterface(Class<T> queryInterfaceType) {
+		if (!queryInterfaces.containsKey(queryInterfaceType)) {
+			if (!queryInterfaceFactories.containsKey(queryInterfaceType)) {
+				logger.error("Requesting QueryInterface of unknown type: " + queryInterfaceType.getName());
+				return null;
+			}
+			
+			try {
+				// Lazy initialization of QueryInterfaces by using a factory pattern
+				QueryInterfaceFactory<T> factory = (QueryInterfaceFactory<T>)
+						queryInterfaceFactories.get(queryInterfaceType).newInstance();
+				T qi = factory.build(this, sessionFactory, sessionValidation);
+				
+				queryInterfaces.put(queryInterfaceType, qi);
+			} catch (InstantiationException | IllegalAccessException e) {
+				logger.error("Failed to instantiate QueryInterface: ", e);
+				e.printStackTrace();
+				return null;
+			}
+		}
+		
+		return (T) queryInterfaces.get(queryInterfaceType);
+	}
+	
+	@Override
+	public <T extends QueryInterface> void registerQueryInterface(Class<T> queryInterfaceType,
+			Class<? extends QueryInterfaceFactory<? extends T>> factoryType) {
+		// Override any existing interface
+		if (queryInterfaces.containsKey(queryInterfaceType))
+			queryInterfaces.remove(queryInterfaceType);
+		
+		queryInterfaceFactories.put(queryInterfaceType, factoryType);
+	}
+	
 	/**
 	 * Prepare the DB service for testing by injecting a custom SessionFactory.
 	 * Note: this should NOT be used in production code.
@@ -309,28 +370,9 @@ public class DBServiceImpl implements DBService, AlitheiaCoreService {
 		DBSessionManagerImpl ssm = new DBSessionManagerImpl(sessionFactory, logger, isInitialised);
 		this.sessionManager = ssm;
 		this.sessionValidation = ssm;
+		preloadFactories();
 		
 		isInitialised.set(setInitialised);
-	}
-
-	@Override
-	public DBSessionManager getSessionManager() {
-		return sessionManager;
-	}
-	
-	@Override
-	public QueryInterface getQueryInterface() {
-		return getQueryInterface(QueryInterface.class);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T> T getQueryInterface(Class<T> queryInterfaceType) {
-		if (queryInterfaceType.isAssignableFrom(HQLQueryInterfaceImpl.class))
-			return (T) new HQLQueryInterfaceImpl(sessionManager, sessionValidation, sessionFactory, logger);
-		else if(queryInterfaceType.isAssignableFrom(SQLQueryInterfaceImpl.class))
-			return (T) new SQLQueryInterfaceImpl(sessionManager, sessionValidation, sessionFactory, getQueryInterface());
-		return null;
 	}
 }
 

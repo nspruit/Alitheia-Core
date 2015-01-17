@@ -41,20 +41,25 @@ import eu.sqooss.service.logging.Logger;
  * This is the service providing access to the Alitheia Database,
  * including project metadata, user management, metrics data...
  * 
+ * The responsibilities of the DBService are split into multiple interfaces to increase
+ * cohesion and to narrow down dependencies from other classes.
+ * 
  * The API includes methods for retrieving data access objects (DAO) by id or by properties,
- * and adding/deleting records in the database, and general-purpose querying methods
- * for lower-level database access.
+ * and adding/deleting records in the database, through the QueryInterface provided by the
+ * getQueryInterface() method. General-purpose querying methods for lower-level database access
+ * are available through other QueryInterfaces, most notably the HQLQueryInterface.
  * Access and manipulation of the data is done directly through the DAOs in an object-oriented way.
  * 
  * All access to the DB service has to be done in the context of a session. You can see the session
- * as the connection to the database and the transaction for that connection.
- * The method startDBSession() initialises a session, while commitDBSession() and rollbackDBSession()
+ * as the connection to the database and the transaction for that connection. Methods for database
+ * session management are provided by the DBSessionManager, obtained through the getSessionManager()
+ * method. The method startDBSession() initialises a session, while commitDBSession() and rollbackDBSession()
  * end the session, by committing or cancelling the changes respectively.
  * You can also query the current state of the session with the method isDBSessionActive().
  * 
- * All the methods in this interface are thread-safe, which means you can call these methods on the
- * same DBService object from different threads without needed to protect the access to the object.
- * Furthermore, each session is handled within the context of a thread. So if two different threads
+ * All the methods in this interface and exposed interfaces are thread-safe, which means you can call
+ * these methods on the same DBService object from different threads without needed to protect the access
+ * to the object. Furthermore, each session is handled within the context of a thread. So if two different threads
  * have code that call startDBSession(), they will each start their own, and whatever they do during
  * the session will be isolated from the other. (ie. no DAO sharing, no changes visible accross threads...)
  * 
@@ -106,7 +111,16 @@ public interface DBService extends AlitheiaCoreService {
      * as QueryInterface
      * @return an implementation of the QueryInterface interface
      */
-    public <T> T getQueryInterface(Class<T> queryInterfaceType);
+    public <T extends QueryInterface> T getQueryInterface(Class<T> queryInterfaceType);
+    
+    /**
+     * Registers a new QueryInterface by providing a factory that can construct
+     * an instance of that QueryInterface.
+     * @param queryInterfaceType the QueryInterface subtype to register
+     * @param factoryType the QueryInterfaceFactory capable of constructing the QueryInterface
+     */
+    public <T extends QueryInterface> void registerQueryInterface(Class<T> queryInterfaceType,
+    		Class<? extends QueryInterfaceFactory<? extends T>> factoryType);
 }
 
 // vi: ai nosi sw=4 ts=4 expandtab

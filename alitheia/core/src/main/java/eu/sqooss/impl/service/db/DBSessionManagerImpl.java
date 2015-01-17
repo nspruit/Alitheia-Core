@@ -10,8 +10,13 @@ import org.hibernate.SessionFactory;
 
 import eu.sqooss.service.db.DAObject;
 import eu.sqooss.service.db.DBSessionManager;
+import eu.sqooss.service.db.DBSessionValidation;
 import eu.sqooss.service.logging.Logger;
 
+/**
+ * Default implementation of the DBSessionManager and DBSessionValidation interfaces
+ * based on the Hibernate framework.
+ */
 public class DBSessionManagerImpl implements DBSessionManager, DBSessionValidation {
 
 	private AtomicBoolean isInitialised = null;
